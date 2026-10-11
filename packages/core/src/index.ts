@@ -10,3 +10,4 @@ export { SNIPPET_TARGETS, generateSnippet, type SnippetTarget } from './snippets
 export { buildSearchIndex, type SearchHit, type SearchIndex, type SearchKind } from './search'
 export { validateValue, deepEqual, type ContractIssue, type IssueKind, type IssueSeverity, type ValidationResult } from './validate'
 export { checkResponse, inferSchema, suggestSpecPatch, type ContractReport, type ObservedResponse } from './contract'
+export { diffSpecs, diffToMarkdown, fragmentToYaml, schemaSummary, type ChangeLevel, type OperationChangeStatus, type OperationDiff, type SpecChange, type SpecDiff } from './diff'

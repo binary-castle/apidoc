@@ -16,6 +16,8 @@ packages/core     Framework-agnostic engine: load (URL/JSON/YAML), Swagger 2.0 �
                   No UI, no Node-only deps.
 packages/ui       React UI (<ApiReference spec="…" />): reference, playground, ⌘K palette.
                   `pnpm dev` runs a dev host with a spec switcher.
+packages/cli      `apidoc diff <old> <new> --fail-on breaking` for CI (files, URLs or
+                  git revisions like origin/main:openapi.yaml).
 packages/standalone
                   <api-docs> web component: one ES module (dist/apidoc.js) with React
                   bundled, rendered in Shadow DOM so host-page CSS can't leak in.
@@ -25,7 +27,8 @@ integrations/django
 integrations/fastapi
                   apidoc-fastapi: mount_apidoc(app) serves the docs and bundle from the app.
 examples/specs    Specs used for tests and the dev host:
-                  orbit.yaml (hand-written 3.1), django-spectacular.yaml, django-yasg.json
+                  orbit.yaml (hand-written 3.1) and its previous release orbit-2.3.0.yaml,
+                  django-spectacular.yaml, django-yasg.json, fastapi.json
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
 examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs.
 ```
@@ -138,6 +141,40 @@ Done:
 - Contract check: every playground response is validated against the spec
   (status, content type, body schema, undocumented fields) with a suggested
   YAML patch for fields the spec is missing
+- Changelog: release history, any-two-versions diff with breaking-change
+  rules, NEW/CHANGED badges, Markdown upgrade notes, and `apidoc diff` for CI
+
+## Changelog and breaking changes
+
+Give the docs your older releases and they show what changed:
+
+```html
+<api-docs spec-url="/openapi.yaml"
+  versions='[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'></api-docs>
+```
+
+(`versions` on `<ApiReference>`, `APIDOC["VERSIONS"]` in Django, `versions=` in FastAPI.)
+The Changelog page lists releases, compares any two, groups changes per
+endpoint with before/after schema fragments, and writes Markdown upgrade notes.
+Endpoints get NEW/CHANGED badges. Without configured versions you can still
+compare against any spec by URL or by dropping a file.
+
+Whether a change breaks clients depends on direction: narrowing what the API
+accepts (new required fields, removed enum values, tighter limits, new
+patterns) breaks requests; widening what it returns (removed fields, new enum
+values, fields that may now be null or missing) breaks responses. Operations
+are matched on method + full path, so renamed path parameters and a base path
+moving between `servers` and `paths` are not reported as remove + add.
+
+The same engine runs in CI:
+
+```bash
+apidoc diff origin/main:openapi.yaml openapi.yaml --fail-on breaking
+apidoc diff old.json https://api.example.com/openapi.json --format markdown
+```
+
+Exit codes: 0 ok, 1 when `--fail-on` is reached, 2 for usage or load errors.
+Build it with `corepack pnpm --filter @apidoc/cli build` (→ `packages/cli/dist/apidoc.mjs`).
 
 ## Contract check
 
@@ -159,5 +196,5 @@ under a strict Content-Security-Policy.
 Next:
 - Integrations: Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
-- Changelog / spec diff (A04), Workflows / Arazzo (A05)
+- Workflows / Arazzo (A05)
 - Optional proxy for cross-origin "Try it" and DNS/TLS timing

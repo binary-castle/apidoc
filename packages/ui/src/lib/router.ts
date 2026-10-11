@@ -9,6 +9,7 @@ export type Route =
   | { view: 'operation'; id: string }
   | { view: 'schema'; name: string }
   | { view: 'playground'; id?: string }
+  | { view: 'changelog'; from?: string }
 
 export function parseHash(hash: string): Route {
   const [kind, ...rest] = hash.replace(/^#\/?/, '').split('/')
@@ -16,6 +17,7 @@ export function parseHash(hash: string): Route {
   if (kind === 'operation' && value) return { view: 'operation', id: value }
   if (kind === 'schema' && value) return { view: 'schema', name: value }
   if (kind === 'playground') return { view: 'playground', id: value || undefined }
+  if (kind === 'changelog') return { view: 'changelog', from: value || undefined }
   return { view: 'intro' }
 }
 
@@ -27,6 +29,8 @@ export function routeToHash(route: Route): string {
       return `#/schema/${encodeURIComponent(route.name)}`
     case 'playground':
       return route.id ? `#/playground/${encodeURIComponent(route.id)}` : '#/playground'
+    case 'changelog':
+      return route.from ? `#/changelog/${encodeURIComponent(route.from)}` : '#/changelog'
     default:
       return '#/'
   }

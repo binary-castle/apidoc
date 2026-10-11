@@ -46,8 +46,21 @@ APIDOC = {
     "THEME": None,           # "dark" | "light" | None (viewer's choice, then OS)
     "BUNDLE_URL": None,      # load the bundle from a CDN instead of static files
     "CSRF": True,            # pass the CSRF token to the playground
+    "VERSIONS": [],          # older releases for the changelog, newest first
 }
 ```
+
+`VERSIONS` turns on the changelog and NEW/CHANGED badges:
+
+```python
+"VERSIONS": [
+    {"version": "1.2.0", "url": "/static/openapi/1.2.0.yaml", "date": "2026-09-18"},
+    {"version": "1.1.0", "url": "/static/openapi/1.1.0.yaml", "date": "2026-07-02"},
+]
+```
+
+Export each release with `manage.py spectacular --file openapi-<version>.yaml`
+when you tag it.
 
 With settings in place you can also use the bundled URLconf:
 

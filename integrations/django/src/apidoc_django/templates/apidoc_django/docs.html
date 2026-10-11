@@ -10,7 +10,7 @@
     </style>
   </head>
   <body>
-    <api-docs spec-url="{{ schema_url }}"{% if theme %} theme="{{ theme }}"{% endif %}{% if csrf_header %} csrf-header="{{ csrf_header }}" csrf-token="{{ csrf_token_value }}"{% if csrf_cookie %} csrf-cookie="{{ csrf_cookie }}"{% endif %}{% endif %}{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></api-docs>
+    <api-docs spec-url="{{ schema_url }}"{% if theme %} theme="{{ theme }}"{% endif %}{% if csrf_header %} csrf-header="{{ csrf_header }}" csrf-token="{{ csrf_token_value }}"{% if csrf_cookie %} csrf-cookie="{{ csrf_cookie }}"{% endif %}{% endif %}{% if versions_json %} versions="{{ versions_json }}"{% endif %}{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></api-docs>
     <script type="module" src="{{ bundle_url }}"{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></script>
   </body>
 </html>

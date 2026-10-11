@@ -1,4 +1,4 @@
-import { ApiReference, type ApiReferenceProps, type Theme } from '@apidoc/ui'
+import { ApiReference, type ApiReferenceProps, type ApiVersion, type Theme } from '@apidoc/ui'
 import themeCss from '@apidoc/ui/theme.css?inline'
 import { createRoot, type Root } from 'react-dom/client'
 
@@ -69,10 +69,12 @@ function inlineSpec(element: HTMLElement): string | undefined {
  * and `csrf-header` + `csrf-cookie` / `csrf-token` for session-authenticated
  * same-origin APIs (the Django integration sets these). A `nonce` attribute is
  * applied to the one <style> added to the document, for strict CSP setups.
+ * `versions` takes JSON: older releases, newest first, e.g.
+ * '[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'.
  * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
  */
 export class ApiDocsElement extends HTMLElement {
-  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token']
+  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions']
 
   #root?: Root
   #spec?: SpecInput
@@ -124,6 +126,24 @@ export class ApiDocsElement extends HTMLElement {
     const csrf = csrfHeader
       ? { headerName: csrfHeader, cookieName: this.getAttribute('csrf-cookie') ?? undefined, token: this.getAttribute('csrf-token') ?? undefined }
       : undefined
-    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} />)
+    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} versions={this.#versions()} />)
+  }
+
+  #versionsCache?: { raw: string; value: ApiVersion[] | undefined }
+
+  /** Parsed `versions` attribute; parsed once per value so React sees a stable array. */
+  #versions(): ApiVersion[] | undefined {
+    const raw = this.getAttribute('versions')
+    if (!raw) return undefined
+    if (this.#versionsCache?.raw === raw) return this.#versionsCache.value
+    let value: ApiVersion[] | undefined
+    try {
+      const parsed: unknown = JSON.parse(raw)
+      value = Array.isArray(parsed) ? parsed.filter((v): v is ApiVersion => typeof v?.version === 'string' && typeof v?.url === 'string') : undefined
+    } catch {
+      console.warn('<api-docs>: the versions attribute is not valid JSON and was ignored.')
+    }
+    this.#versionsCache = { raw, value }
+    return value
   }
 }

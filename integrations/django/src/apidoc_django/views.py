@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import get_token
@@ -57,6 +59,7 @@ class ApiDocView(TemplateView):
     theme = None
     bundle_url = None
     csrf = None
+    versions = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -65,6 +68,7 @@ class ApiDocView(TemplateView):
             raise ImproperlyConfigured(f"apidoc theme must be 'dark', 'light' or None, not {theme!r}.")
         csrf = conf.get("CSRF") if self.csrf is None else self.csrf
         cookie_readable = not (settings.CSRF_USE_SESSIONS or settings.CSRF_COOKIE_HTTPONLY)
+        versions = self.versions if self.versions is not None else conf.get("VERSIONS")
         context.update(
             schema_url=resolve_schema_url(self.schema_url or conf.get("SCHEMA_URL")),
             title=self.title or conf.get("TITLE") or "API Reference",
@@ -76,5 +80,7 @@ class ApiDocView(TemplateView):
             csrf_token_value=get_token(self.request) if csrf else None,
             # django-csp and Django 6's built-in CSP both expose the per-request nonce here.
             csp_nonce=getattr(self.request, "csp_nonce", None),
+            # JSON for the element's `versions` attribute; the template escapes it.
+            versions_json=json.dumps(versions) if versions else None,
         )
         return context

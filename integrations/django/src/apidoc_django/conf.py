@@ -13,6 +13,9 @@ DEFAULTS = {
     "BUNDLE_URL": None,
     # Send Django's CSRF token on unsafe same-origin "Try it" requests (session auth).
     "CSRF": True,
+    # Older releases for the changelog, newest first:
+    # [{"version": "1.2.0", "url": "/static/openapi-1.2.0.yaml", "date": "2026-09-18"}]
+    "VERSIONS": [],
 }
 
 BUNDLE_STATIC_PATH = "apidoc_django/apidoc.js"

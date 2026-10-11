@@ -43,6 +43,8 @@ mount_apidoc(
     bundle_url=None,    # load the bundle from a CDN instead of the wheel
     csrf_header=None,   # e.g. "X-CSRF-Token" for cookie sessions with
     csrf_cookie=None,   # double-submit CSRF, e.g. "fastapi-csrf-token"
+    versions=None,      # older releases for the changelog, newest first:
+                        # [{"version": "1.2.0", "url": "/specs/1.2.0.json", "date": "2026-09-18"}]
 )
 ```
 

@@ -1,3 +1,5 @@
+import html
+import json
 import re
 from unittest import mock
 
@@ -23,6 +25,11 @@ class ApiDocViewTests(SimpleTestCase):
         self.assertIn('<script type="module" src="/static/apidoc_django/apidoc.js">', html)
         self.assertIn("<title>API Reference</title>", html)
         self.assertNotIn("theme=", html)
+
+    def test_versions_become_an_escaped_json_attribute(self):
+        attrs = element(self.client.get("/docs-versions/").content.decode())
+        self.assertEqual(json.loads(html.unescape(attrs["versions"])), [{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}])
+        self.assertNotIn("versions", element(self.client.get("/docs/").content.decode()))
 
     def test_never_cached(self):
         response = self.client.get("/docs/")

@@ -1,3 +1,5 @@
+import html
+import json
 import re
 import tempfile
 import unittest
@@ -76,6 +78,13 @@ class MountTests(unittest.TestCase):
         self.assertIn("<title>Orbit &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;</title>", html)
         # With a CDN bundle nothing is mounted locally.
         self.assertEqual(client.get("/reference/_static/apidoc.js").status_code, 404)
+
+    def test_versions_become_an_escaped_json_attribute(self):
+        app = make_app()
+        releases = [{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}]
+        mount_apidoc(app, versions=releases)
+        attrs = element(TestClient(app).get("/reference").text)
+        self.assertEqual(json.loads(html.unescape(attrs["versions"])), releases)
 
     def test_not_listed_in_the_openapi_schema(self):
         app = make_app()

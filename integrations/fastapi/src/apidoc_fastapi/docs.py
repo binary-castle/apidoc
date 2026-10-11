@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from html import escape
 from pathlib import Path
 from typing import Literal
@@ -22,6 +23,7 @@ def get_apidoc_html(
     csrf_header: str | None = None,
     csrf_cookie: str | None = None,
     nonce: str | None = None,
+    versions: list[dict[str, str]] | None = None,
 ) -> HTMLResponse:
     """
     The docs page as an HTMLResponse, like FastAPI's ``get_swagger_ui_html``.
@@ -29,7 +31,15 @@ def get_apidoc_html(
     """
     if theme not in (None, "dark", "light"):
         raise ValueError(f"theme must be 'dark', 'light' or None, not {theme!r}")
-    attrs = {"spec-url": openapi_url, "theme": theme, "csrf-header": csrf_header, "csrf-cookie": csrf_cookie, "nonce": nonce}
+    attrs = {
+        "spec-url": openapi_url,
+        "theme": theme,
+        "csrf-header": csrf_header,
+        "csrf-cookie": csrf_cookie,
+        # Older releases for the changelog, newest first.
+        "versions": json.dumps(versions) if versions else None,
+        "nonce": nonce,
+    }
     element_attrs = "".join(f' {name}="{escape(value)}"' for name, value in attrs.items() if value)
     nonce_attr = f' nonce="{escape(nonce)}"' if nonce else ""
     background = "#fff" if theme == "light" else "#0b0b0f"
@@ -65,6 +75,7 @@ def mount_apidoc(
     bundle_url: str | None = None,
     csrf_header: str | None = None,
     csrf_cookie: str | None = None,
+    versions: list[dict[str, str]] | None = None,
 ) -> None:
     """
     Serve the apidoc reference at ``path`` and the JS bundle under ``{path}/_static``.
@@ -75,7 +86,9 @@ def mount_apidoc(
     ``openapi_url`` and ``title`` default to the app's own. URLs respect
     ``root_path``, so apps behind a path-prefixing proxy work unchanged.
     Pass ``csrf_header``/``csrf_cookie`` if your API uses cookie sessions with
-    double-submit CSRF (e.g. fastapi-csrf-protect).
+    double-submit CSRF (e.g. fastapi-csrf-protect). ``versions`` lists older
+    releases, newest first, for the changelog:
+    ``[{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}]``.
     """
     path = "/" + path.strip("/")
     if path == "/":
@@ -114,6 +127,7 @@ def mount_apidoc(
             theme=theme,
             csrf_header=csrf_header,
             csrf_cookie=csrf_cookie,
+            versions=versions,
         )
 
     app.add_api_route(path, apidoc_page, methods=["GET"], include_in_schema=False, response_class=HTMLResponse)

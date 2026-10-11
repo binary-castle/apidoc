@@ -1,0 +1,25 @@
+{
+  "name": "@apidoc/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "apidoc command line: diff two OpenAPI versions and fail CI on breaking changes.",
+  "bin": {
+    "apidoc": "./dist/apidoc.mjs"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@apidoc/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

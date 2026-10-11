@@ -42,11 +42,13 @@ function SpecSwitcher({ current }: { current: string }) {
 const params = new URLSearchParams(window.location.search)
 const spec = params.get('spec') ?? '/specs/orbit.yaml'
 const theme = params.get('theme')
+// The Orbit example ships its previous release for the changelog.
+const versions = spec.endsWith('/orbit.yaml') ? [{ version: '2.3.0', url: '/specs/orbit-2.3.0.yaml', date: '2026-09-18' }] : undefined
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <div style={{ height: '100vh' }}>
-      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} />
+      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} versions={versions} />
     </div>
     <SpecSwitcher current={spec} />
   </StrictMode>,

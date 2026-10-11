@@ -4,7 +4,7 @@ import { useDocs } from '../state'
 import { Icon, MethodText, Tag } from './ui'
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { model, route, navigate } = useDocs()
+  const { model, route, navigate, previousDiff, operationChange } = useDocs()
   const storageKey = `${model.info.title}:collapsed`
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => readStored(storageKey, {}))
   const activeRef = useRef<HTMLButtonElement>(null)
@@ -42,6 +42,15 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             Authentication
           </button>
         )}
+        <button type="button" onClick={() => go({ view: 'changelog' })} className={`flex items-center gap-2.5 rounded-[7px] px-2 py-1.5 text-left text-[13px] ${route.view === 'changelog' ? 'bg-selected text-fg' : 'text-fg-2 hover:bg-hover'}`}>
+          <Icon name="clock" className="text-muted" />
+          <span className="flex-1">Changelog</span>
+          {previousDiff && previousDiff.operations.length > 0 && (
+            previousDiff.counts.breaking > 0
+              ? <Tag tone="err">{previousDiff.counts.breaking} breaking</Tag>
+              : <Tag tone="accent">{previousDiff.operations.length} changed</Tag>
+          )}
+        </button>
       </div>
 
       {model.tags.map(tag => {
@@ -70,7 +79,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     <span className={`flex-1 truncate text-[13px] ${operation.deprecated ? 'text-subtle line-through decoration-faint' : active ? 'font-medium text-fg-strong' : 'text-fg-2'}`}>
                       {operation.summary ?? operation.path}
                     </span>
-                    {operation.deprecated && <Tag tone="err">DEPRECATED</Tag>}
+                    {operation.deprecated ? (
+                      <Tag tone="err">DEPRECATED</Tag>
+                    ) : operationChange(operation.id) === 'added' ? (
+                      <Tag tone="ok">NEW</Tag>
+                    ) : operationChange(operation.id) === 'changed' ? (
+                      <span className="size-1.5 shrink-0 rounded-full bg-warn" title="Changed since the previous release" />
+                    ) : null}
                   </button>
                 )
               })}

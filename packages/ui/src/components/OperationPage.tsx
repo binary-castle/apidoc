@@ -122,8 +122,10 @@ function ResponsesSection({ operation }: { operation: OperationModel }) {
 }
 
 export function OperationPage({ operation }: { operation: OperationModel }) {
-  const { model, baseUrl, navigate } = useDocs()
+  const { model, baseUrl, navigate, previousDiff, operationChange } = useDocs()
   const tag = model.tags.find(t => t.operations.includes(operation))
+  const change = operationChange(operation.id)
+  const releaseLabel = previousDiff?.to.version ? `v${previousDiff.to.version.replace(/^v/, '')}` : 'this release'
   const rateLimit = operation.extensions['x-rate-limit'] ?? operation.extensions['x-ratelimit-limit']
 
   useEffect(() => {
@@ -160,6 +162,13 @@ export function OperationPage({ operation }: { operation: OperationModel }) {
           {typeof rateLimit === 'string' || typeof rateLimit === 'number' ? <Chip icon={<Icon name="zap" size={12} className="text-warn" strokeWidth={2} />}>{String(rateLimit)}</Chip> : null}
           {operation.parameters.some(p => p.name.toLowerCase() === 'idempotency-key') && <Chip>Idempotent</Chip>}
           {operation.deprecated && <Chip tone="err">Deprecated</Chip>}
+          {change && previousDiff && (
+            <button type="button" onClick={() => navigate({ view: 'changelog', from: previousDiff.from.version })}>
+              <Chip tone={change === 'added' ? 'ok' : 'warn'}>
+                {change === 'added' ? `New in ${releaseLabel}` : change === 'deprecated' ? `Deprecated in ${releaseLabel}` : `Changed in ${releaseLabel}`} · view diff
+              </Chip>
+            </button>
+          )}
           {operation.operationId && <Chip><span className="font-mono">{operation.operationId}</span></Chip>}
         </div>
         {operation.description && <div className="ad-prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(operation.description) }} />}

@@ -5,12 +5,15 @@ import {
   type ApiModel,
   type Credential,
   type CsrfConfig,
+  type OperationChangeStatus,
   type OperationModel,
   type SearchIndex,
+  type SpecDiff,
 } from '@apidoc/core'
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { readStored, writeStored } from './lib/storage'
 import type { Route } from './lib/router'
+import { useOperationChanges, usePreviousDiff, type ApiVersion } from './lib/versions'
 
 export type Theme = 'dark' | 'light'
 
@@ -22,6 +25,11 @@ export interface DocsState {
   specUrl?: string
   /** CSRF header for same-origin playground requests (e.g. Django session auth). */
   csrf?: CsrfConfig
+  /** Older releases (newest first); the loaded spec is the current one. */
+  versions: ApiVersion[]
+  /** Previous release → current, once loaded. */
+  previousDiff?: SpecDiff
+  operationChange: (id: string) => OperationChangeStatus | undefined
   route: Route
   navigate: (route: Route) => void
   operationById: (id: string) => OperationModel | undefined
@@ -44,6 +52,7 @@ export interface DocsState {
 }
 
 const DocsContext = createContext<DocsState | null>(null)
+const NO_VERSIONS: ApiVersion[] = []
 
 export function useDocs(): DocsState {
   const state = useContext(DocsContext)
@@ -63,6 +72,7 @@ interface ProviderProps {
   model: ApiModel
   specUrl?: string
   csrf?: CsrfConfig
+  versions?: ApiVersion[]
   route: Route
   navigate: (route: Route) => void
   theme: Theme
@@ -70,7 +80,7 @@ interface ProviderProps {
   children: ReactNode
 }
 
-export function DocsProvider({ model, specUrl, csrf, route, navigate, theme, setTheme, children }: ProviderProps) {
+export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, route, navigate, theme, setTheme, children }: ProviderProps) {
   const storageKey = model.info.title
   const resolver = useMemo(() => new Resolver(model.document), [model])
   const search = useMemo(() => buildSearchIndex(model), [model])
@@ -87,6 +97,8 @@ export function DocsProvider({ model, specUrl, csrf, route, navigate, theme, set
     readStored(`${storageKey}:credentials`, {}, 'session'),
   )
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const previousDiff = usePreviousDiff(model, versions, specUrl)
+  const changes = useOperationChanges(previousDiff)
 
   const setServerIndex = useCallback((index: number) => {
     setServerIndexState(index)
@@ -118,6 +130,9 @@ export function DocsProvider({ model, specUrl, csrf, route, navigate, theme, set
     search,
     specUrl,
     csrf,
+    versions,
+    previousDiff,
+    operationChange: id => changes.get(id),
     route,
     navigate,
     operationById: id => operations.get(id),
@@ -132,7 +147,7 @@ export function DocsProvider({ model, specUrl, csrf, route, navigate, theme, set
     setCredential,
     paletteOpen,
     setPaletteOpen,
-  }), [model, resolver, search, specUrl, csrf, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
+  }), [model, resolver, search, specUrl, csrf, versions, previousDiff, changes, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
 
   return <DocsContext.Provider value={value}>{children}</DocsContext.Provider>
 }
