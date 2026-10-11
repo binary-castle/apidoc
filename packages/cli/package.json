@@ -1,22 +1,48 @@
 {
-  "name": "@apidoc/cli",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@binarycastle/apidoc-cli",
+  "version": "0.1.0",
+  "description": "Diff two OpenAPI/Swagger versions and fail CI on breaking changes.",
+  "keywords": [
+    "openapi",
+    "swagger",
+    "breaking-changes",
+    "api-diff",
+    "changelog",
+    "ci"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/binary-castle/apidoc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/binary-castle/apidoc.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/binary-castle/apidoc/issues"
+  },
   "type": "module",
-  "description": "apidoc command line: diff two OpenAPI versions and fail CI on breaking changes.",
   "bin": {
     "apidoc": "./dist/apidoc.mjs"
   },
-  "files": ["dist"],
+  "files": [
+    "dist/apidoc.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "vite build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
   },
-  "dependencies": {
-    "@apidoc/core": "workspace:*"
-  },
   "devDependencies": {
+    "@apidoc/core": "workspace:*",
     "@types/node": "^24.19.2",
     "typescript": "^5.9.3",
     "vite": "^8.3.4",

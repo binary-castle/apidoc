@@ -40,7 +40,7 @@ mount_apidoc(
     openapi_url=None,   # default: app.openapi_url
     title=None,         # default: app.title
     theme=None,         # "dark" | "light" | None (viewer's choice, then OS)
-    bundle_url=None,    # load the bundle from a CDN instead of the wheel
+    bundle_url=None,    # e.g. "https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js"
     csrf_header=None,   # e.g. "X-CSRF-Token" for cookie sessions with
     csrf_cookie=None,   # double-submit CSRF, e.g. "fastapi-csrf-token"
     versions=None,      # older releases for the changelog, newest first:

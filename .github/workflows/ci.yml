@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Node 24, Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest and newest supported.
+        python: ['3.10', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The CLI tests read a spec through `git show HEAD:...`.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Copy the bundle into the Python packages
+        run: node scripts/copy-python-bundles.mjs
+      - name: Versions agree
+        run: node scripts/version.mjs
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Django integration
+        working-directory: integrations/django
+        run: |
+          python -m pip install --quiet "django>=4.2"
+          python runtests.py
+      - name: FastAPI integration
+        working-directory: integrations/fastapi
+        run: |
+          python -m pip install --quiet fastapi httpx2
+          python runtests.py

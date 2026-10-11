@@ -11,7 +11,7 @@ const targets = [
 ]
 
 if (!existsSync(join(dist, 'apidoc.js'))) {
-  console.error('packages/standalone/dist/apidoc.js is missing: build @apidoc/standalone first.')
+  console.error('packages/standalone/dist/apidoc.js is missing: build @binarycastle/apidoc first.')
   process.exit(1)
 }
 

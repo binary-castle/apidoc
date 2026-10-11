@@ -90,7 +90,7 @@ Regenerate the fixtures after changing the example:
 
 ```html
 <api-docs spec-url="/openapi.json"></api-docs>
-<script type="module" src="https://YOUR-CDN/apidoc/dist/apidoc.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js"></script>
 ```
 
 - `spec-url` — URL of the OpenAPI/Swagger document (JSON or YAML).
@@ -103,8 +103,8 @@ Regenerate the fixtures after changing the example:
 Build and try it against a deliberately hostile host page:
 
 ```bash
-corepack pnpm --filter @apidoc/standalone build
-corepack pnpm --filter @apidoc/standalone preview   # open /demo.html
+corepack pnpm --filter @binarycastle/apidoc build
+corepack pnpm --filter @binarycastle/apidoc preview   # open /demo.html
 ```
 
 The entry is ~181 KB gzipped (React included). The syntax highlighter and the
@@ -128,6 +128,45 @@ Session-cookie APIs get CSRF support from the element's `csrf-header`,
 The token is only sent on unsafe, same-origin requests.
 
 Integration tests: `python runtests.py` in `integrations/django` and `integrations/fastapi`.
+
+## Packages
+
+| Package | Registry | What it is |
+|---|---|---|
+| [`@binarycastle/apidoc`](packages/standalone/README.md) | npm / jsDelivr | The `<api-docs>` web component bundle |
+| [`@binarycastle/apidoc-cli`](packages/cli/README.md) | npm | `apidoc diff … --fail-on breaking` for CI |
+| [`apidoc-django`](integrations/django/README.md) | PyPI | Docs served by Django, bundle included |
+| [`apidoc-fastapi`](integrations/fastapi/README.md) | PyPI | Docs served by FastAPI, bundle included |
+
+`@apidoc/core` and `@apidoc/ui` are internal workspace packages (bundled into
+the above) and are not published yet. Everything is MIT licensed.
+
+## Releasing
+
+All four packages share one version and are released together by
+[`.github/workflows/release.yml`](.github/workflows/release.yml) when a `v*` tag is pushed:
+
+```bash
+node scripts/version.mjs 0.2.0          # bump every package
+git commit -am "Release 0.2.0"
+git tag v0.2.0 && git push --follow-tags
+```
+
+The workflow checks the tag matches every package, runs all JS and Python
+tests, builds the bundle into the wheels, publishes to npm (with provenance)
+and PyPI (trusted publishing), and creates a GitHub release with the artifacts.
+
+One-time setup before the first release:
+
+1. Push this repository to GitHub (the package metadata points at
+   `github.com/binary-castle/apidoc`; change `repository`/`homepage` in
+   `packages/*/package.json` and `[project.urls]` in the pyprojects if it lives elsewhere).
+2. npm: create the `binarycastle` organization, then add an automation token
+   as the `NPM_TOKEN` repository secret. After the first publish you can switch
+   both packages to trusted publishing on npmjs.com and delete the secret.
+3. PyPI: add a "pending trusted publisher" for `apidoc-django` and
+   `apidoc-fastapi` (owner/repo, workflow `release.yml`, environment `pypi`),
+   and create the `pypi` environment in the GitHub repository settings.
 
 ## Status
 
@@ -174,7 +213,7 @@ apidoc diff old.json https://api.example.com/openapi.json --format markdown
 ```
 
 Exit codes: 0 ok, 1 when `--fail-on` is reached, 2 for usage or load errors.
-Build it with `corepack pnpm --filter @apidoc/cli build` (→ `packages/cli/dist/apidoc.mjs`).
+Build it with `corepack pnpm --filter @binarycastle/apidoc-cli build` (→ `packages/cli/dist/apidoc.mjs`).
 
 ## Contract check
 

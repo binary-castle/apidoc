@@ -19,7 +19,7 @@
       "runtimeArgs": [
         "pnpm",
         "--filter",
-        "@apidoc/standalone",
+        "@binarycastle/apidoc",
         "preview"
       ],
       "port": 5180,

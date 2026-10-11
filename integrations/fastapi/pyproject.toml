@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -8,6 +8,10 @@ version = "0.1.0"
 description = "Serve the apidoc API reference and playground from your FastAPI app."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "binarycastle" }]
+keywords = ["openapi", "swagger", "api-docs", "fastapi"]
 dependencies = ["fastapi>=0.100"]
 classifiers = [
   "Framework :: FastAPI",
@@ -15,11 +19,17 @@ classifiers = [
   "Topic :: Software Development :: Documentation",
 ]
 
+[project.urls]
+Homepage = "https://github.com/binary-castle/apidoc"
+Documentation = "https://github.com/binary-castle/apidoc/tree/master/integrations/fastapi#readme"
+Issues = "https://github.com/binary-castle/apidoc/issues"
+Changelog = "https://github.com/binary-castle/apidoc/releases"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/apidoc_fastapi"]
 # The JS bundle is a build output (gitignored), so it has to be listed explicitly.
 artifacts = ["src/apidoc_fastapi/static/**"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "runtests.py", "README.md"]
+include = ["src", "tests", "runtests.py", "README.md", "LICENSE"]
 artifacts = ["src/apidoc_fastapi/static/**"]

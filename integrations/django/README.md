@@ -44,7 +44,7 @@ APIDOC = {
     "SCHEMA_URL": "schema",  # URL name, path or absolute URL
     "TITLE": "Orbit API",    # page <title>, default "API Reference"
     "THEME": None,           # "dark" | "light" | None (viewer's choice, then OS)
-    "BUNDLE_URL": None,      # load the bundle from a CDN instead of static files
+    "BUNDLE_URL": None,      # e.g. "https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js"
     "CSRF": True,            # pass the CSRF token to the playground
     "VERSIONS": [],          # older releases for the changelog, newest first
 }

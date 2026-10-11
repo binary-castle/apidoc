@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { diffSpecs, diffToMarkdown, loadSpec, type ApiModel, type ChangeLevel, type SpecDiff } from '@apidoc/core'
+import { version } from '../package.json'
 
-export const VERSION = '0.0.0'
+export const VERSION = version
 
 export interface Io {
   out: (text: string) => void

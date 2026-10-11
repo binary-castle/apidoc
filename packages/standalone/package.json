@@ -1,31 +1,60 @@
 {
-  "name": "@apidoc/standalone",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@binarycastle/apidoc",
+  "version": "0.1.0",
+  "description": "OpenAPI reference, playground, contract check and changelog as one drop-in <api-docs> web component.",
+  "keywords": [
+    "openapi",
+    "swagger",
+    "api-reference",
+    "api-docs",
+    "web-component",
+    "playground",
+    "scalar-alternative"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/binary-castle/apidoc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/binary-castle/apidoc.git",
+    "directory": "packages/standalone"
+  },
+  "bugs": {
+    "url": "https://github.com/binary-castle/apidoc/issues"
+  },
   "type": "module",
-  "description": "Drop-in <api-docs> web component: one ES module, Shadow DOM isolated.",
   "exports": {
     ".": "./dist/apidoc.js"
   },
-  "files": ["dist"],
+  "module": "./dist/apidoc.js",
+  "jsdelivr": "dist/apidoc.js",
+  "unpkg": "dist/apidoc.js",
+  "files": [
+    "dist/apidoc.js",
+    "dist/chunks",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": true,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json"
   },
-  "dependencies": {
-    "@apidoc/ui": "workspace:*",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
-  },
   "devDependencies": {
+    "@apidoc/ui": "workspace:*",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vite": "^8.3.4"
