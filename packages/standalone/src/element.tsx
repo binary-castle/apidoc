@@ -1,0 +1,120 @@
+import { ApiReference, type ApiReferenceProps, type Theme } from '@apidoc/ui'
+import themeCss from '@apidoc/ui/theme.css?inline'
+import { createRoot, type Root } from 'react-dom/client'
+
+type SpecInput = ApiReferenceProps['spec']
+
+/**
+ * `all: initial` stops the host page's inherited styles (font, colour,
+ * line-height, letter-spacing…) from leaking in; nothing else crosses the
+ * shadow boundary. Height defaults to the viewport and is overridable.
+ */
+const HOST_CSS = `
+:host { all: initial; display: block; height: var(--apidoc-height, 100vh); contain: layout paint; }
+:host([hidden]) { display: none; }
+.apidoc-mount { height: 100%; }
+`
+
+/**
+ * Parsed once and shared by every <api-docs> on the page (adoptedStyleSheets),
+ * so the CSS text is referenced in exactly one place in the bundle.
+ */
+let sheets: CSSStyleSheet[] | undefined
+function sharedSheets(): CSSStyleSheet[] {
+  if (!sheets) {
+    const host = new CSSStyleSheet()
+    host.replaceSync(HOST_CSS)
+    const theme = new CSSStyleSheet()
+    theme.replaceSync(themeCss)
+    sheets = [host, theme]
+    installDocumentGlobals(theme)
+  }
+  return sheets
+}
+
+/** @property rules anywhere in the sheet, including inside @layer blocks. */
+function propertyRules(rules: CSSRuleList): string[] {
+  return [...rules].flatMap(rule =>
+    rule.cssText.startsWith('@property') ? [rule.cssText] : 'cssRules' in rule ? propertyRules((rule as CSSGroupingRule).cssRules) : [],
+  )
+}
+
+/**
+ * Two kinds of rules are ignored inside shadow roots and must live on the
+ * document: @font-face (fonts) and @property (Tailwind registers its utility
+ * variables with it; without them shadows/rings/transforms silently break).
+ */
+function installDocumentGlobals(theme: CSSStyleSheet) {
+  const style = document.createElement('style')
+  style.dataset.apidoc = 'globals'
+  style.textContent = propertyRules(theme.cssRules).join('\n')
+  document.head.append(style)
+  void import('./fonts').then(({ fontFaces }) => {
+    style.textContent += `\n${fontFaces}`
+  })
+}
+
+/** Inline spec from a child <script type="application/json|yaml"> element. */
+function inlineSpec(element: HTMLElement): string | undefined {
+  const script = element.querySelector('script[type="application/json"], script[type="application/yaml"], script[type="text/yaml"]')
+  return script?.textContent?.trim() || undefined
+}
+
+/**
+ * <api-docs spec-url="/openapi.json" theme="dark"></api-docs>
+ *
+ * Attributes: `spec-url`, `theme` ("dark" | "light"; omit to follow the viewer).
+ * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
+ */
+export class ApiDocsElement extends HTMLElement {
+  static observedAttributes = ['spec-url', 'theme']
+
+  #root?: Root
+  #spec?: SpecInput
+
+  get spec(): SpecInput | undefined {
+    return this.#spec
+  }
+
+  set spec(value: SpecInput | undefined) {
+    this.#spec = value
+    this.#render()
+  }
+
+  connectedCallback() {
+    if (this.#root) return
+    const shadow = this.shadowRoot ?? this.attachShadow({ mode: 'open' })
+    shadow.adoptedStyleSheets = sharedSheets()
+    const mount = document.createElement('div')
+    mount.className = 'apidoc-mount'
+    shadow.replaceChildren(mount)
+    this.#root = createRoot(mount)
+    this.#render()
+  }
+
+  disconnectedCallback() {
+    // Moving the element fires disconnect + connect; only tear down if it's really gone.
+    queueMicrotask(() => {
+      if (this.isConnected || !this.#root) return
+      this.#root.unmount()
+      this.#root = undefined
+      this.shadowRoot?.replaceChildren()
+    })
+  }
+
+  attributeChangedCallback() {
+    this.#render()
+  }
+
+  #render() {
+    if (!this.#root) return
+    const spec = this.#spec ?? this.getAttribute('spec-url') ?? (inlineSpec(this) ? { content: inlineSpec(this)! } : undefined)
+    const themeAttr = this.getAttribute('theme')
+    const theme: Theme | undefined = themeAttr === 'dark' || themeAttr === 'light' ? themeAttr : undefined
+    if (!spec) {
+      this.#root.render(<p style={{ font: '14px system-ui', padding: 24, color: '#b02a2a' }}>&lt;api-docs&gt; needs a <code>spec-url</code> attribute, a <code>spec</code> property, or an inline &lt;script type="application/json"&gt;.</p>)
+      return
+    }
+    this.#root.render(<ApiReference spec={spec} theme={theme} />)
+  }
+}

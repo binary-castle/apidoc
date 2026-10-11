@@ -7,7 +7,8 @@ export function Popover({ trigger, children, align = 'left', width = 320 }: { tr
   useEffect(() => {
     if (!open) return
     const onPointer = (event: PointerEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false)
+      // composedPath() sees through shadow roots; event.target would be the host element.
+      if (ref.current && !event.composedPath().includes(ref.current)) setOpen(false)
     }
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false)

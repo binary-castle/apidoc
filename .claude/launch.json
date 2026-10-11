@@ -9,6 +9,13 @@
       "autoPort": true
     },
     {
+      "name": "standalone-preview",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": ["pnpm", "--filter", "@apidoc/standalone", "preview"],
+      "port": 5180,
+      "autoPort": true
+    },
+    {
       "name": "django-example",
       "runtimeExecutable": "examples/django/.venv/bin/python",
       "runtimeArgs": ["examples/django/manage.py", "runserver", "8000"],

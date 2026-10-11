@@ -83,7 +83,9 @@ export function CommandPalette() {
   // ⌘K / Ctrl+K / "/" open the palette from anywhere.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      const typing = event.target instanceof HTMLElement && (event.target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName))
+      // composedPath()[0] is the real target even when the UI lives in a shadow root.
+      const target = event.composedPath()[0]
+      const typing = target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
         setPaletteOpen(!paletteOpen)

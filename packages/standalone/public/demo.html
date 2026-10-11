@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apidoc · standalone demo</title>
+    <!--
+      A deliberately hostile host page: if any of this leaks into the docs,
+      Shadow DOM isolation is broken.
+    -->
+    <style>
+      * { box-sizing: content-box; }
+      body { margin: 0; font: 19px/2.4 "Comic Sans MS", "Chalkboard SE", cursive; color: #d40000; letter-spacing: 1.5px; background: #fffbe6; }
+      div, span, p, nav, section { padding: 3px; border-radius: 0 !important; }
+      button { background: hotpink !important; border: 3px dashed red !important; font-size: 22px !important; }
+      code, pre { background: yellow; }
+      h1 { text-transform: uppercase; font-size: 60px; }
+      .apidoc, .flex { display: none !important; }
+      .host-bar { height: 48px; display: flex; align-items: center; gap: 16px; padding: 0 20px; border-bottom: 2px solid #d40000; }
+    </style>
+  </head>
+  <body>
+    <div class="host-bar">
+      <strong>Host app</strong>
+      <button type="button">Host button</button>
+      <span id="spec-label"></span>
+    </div>
+    <api-docs style="--apidoc-height: calc(100vh - 54px)"></api-docs>
+    <script type="module">
+      import './apidoc.js'
+      const params = new URLSearchParams(location.search)
+      const docs = document.querySelector('api-docs')
+      const spec = params.get('spec') ?? '/specs/orbit.yaml'
+      docs.setAttribute('spec-url', spec)
+      if (params.get('theme')) docs.setAttribute('theme', params.get('theme'))
+      document.getElementById('spec-label').textContent = spec
+    </script>
+  </body>
+</html>
