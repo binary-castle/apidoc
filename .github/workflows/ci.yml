@@ -18,12 +18,12 @@ jobs:
         # Oldest and newest supported.
         python: ['3.10', '3.13']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The CLI tests read a spec through `git show HEAD:...`.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: corepack enable
@@ -37,7 +37,7 @@ jobs:
       - name: Versions agree
         run: node scripts/version.mjs
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - name: Django integration

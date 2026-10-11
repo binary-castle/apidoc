@@ -49,7 +49,7 @@ or moving `/api` between `servers` and `paths` isn't reported as remove + add.
 ## GitHub Actions
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
   with: { fetch-depth: 0 }
 - run: npx @binarycastle/apidoc-cli diff origin/${{ github.base_ref }}:openapi.yaml openapi.yaml --fail-on breaking
 ```

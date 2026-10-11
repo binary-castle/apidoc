@@ -13,13 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Tag matches every package version
         run: node scripts/version.mjs --check "$GITHUB_REF_NAME"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: corepack enable
@@ -35,7 +35,7 @@ jobs:
           pnpm --filter @binarycastle/apidoc pack --pack-destination "$PWD/dist/npm"
           pnpm --filter @binarycastle/apidoc-cli pack --pack-destination "$PWD/dist/npm"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Test and build Python packages
@@ -47,7 +47,7 @@ jobs:
           python -m build integrations/fastapi --outdir dist/python
           python -m twine check --strict dist/python/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: packages
           path: dist/
@@ -60,11 +60,11 @@ jobs:
       # npm provenance and trusted publishing use the workflow's OIDC token.
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -86,7 +86,7 @@ jobs:
       # PyPI trusted publishing: no API token stored anywhere.
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist
@@ -100,7 +100,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist
