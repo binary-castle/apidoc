@@ -3,6 +3,7 @@ import {
   buildRequest,
   exampleForMedia,
   sampleFromSchema,
+  unwrapNullable,
   type ApiModel,
   type Credential,
   type HttpRequestSpec,
@@ -71,6 +72,7 @@ const PLACEHOLDER: Credential = { token: 'YOUR_TOKEN', username: 'USERNAME', pas
 interface ToRequestOptions {
   baseUrl: string
   model: ApiModel
+  resolver: Resolver
   credentials: Record<string, Credential>
   /** Show "YOUR_TOKEN"-style placeholders when no credential is set (code samples). */
   placeholders?: boolean
@@ -80,7 +82,7 @@ export function draftToRequest(operation: OperationModel, draft: Draft, options:
   const query: Record<string, string | string[]> = {}
   for (const [name, value] of Object.entries(draft.query)) {
     const parameter = operation.parameters.find(p => p.in === 'query' && p.name === name)
-    const isArray = parameter?.schema && /array/.test(JSON.stringify(parameter.schema.type ?? ''))
+    const isArray = /array/.test(JSON.stringify(unwrapNullable(parameter?.schema, options.resolver)?.type ?? ''))
     query[name] = isArray ? value.split(',').map(v => v.trim()).filter(Boolean) : value
   }
   let request = buildRequest(operation, {

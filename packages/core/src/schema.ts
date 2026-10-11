@@ -18,6 +18,22 @@ export function isNullable(schema: SchemaObject | undefined): boolean {
   return [...(schema.oneOf ?? []), ...(schema.anyOf ?? [])].some(s => s.type === 'null')
 }
 
+/**
+ * The schema that actually describes the value: resolves $ref and unwraps
+ * `anyOf/oneOf: [X, {type: null}]` (how Pydantic/FastAPI and 3.1 specs spell
+ * "optional X") to X, keeping the wrapper's description/title/default.
+ */
+export function unwrapNullable(schema: SchemaObject | undefined, resolver: Resolver): SchemaObject | undefined {
+  const resolved = resolver.schema(schema).value
+  const variants = resolved?.anyOf ?? resolved?.oneOf
+  if (!resolved || !variants) return resolved
+  const nonNull = variants.filter(v => v.type !== 'null')
+  if (nonNull.length !== 1 || nonNull.length === variants.length) return resolved
+  const inner = resolver.schema(nonNull[0]).value ?? {}
+  const { anyOf: _a, oneOf: _o, ...wrapper } = resolved
+  return { ...inner, ...Object.fromEntries(Object.entries(wrapper).filter(([, v]) => v !== undefined)), nullable: true }
+}
+
 /** Flatten allOf (recursively) into one schema so properties and `required` merge. */
 export function mergeAllOf(schema: SchemaObject | undefined, resolver: Resolver, depth = 0): SchemaObject | undefined {
   const resolved = resolver.schema(schema).value
@@ -101,7 +117,8 @@ export function typeLabel(schema: SchemaObject | undefined, resolver: Resolver):
 export function constraintHints(schema: SchemaObject | undefined): string[] {
   if (!schema) return []
   const hints: string[] = []
-  if (schema.minLength !== undefined && schema.maxLength !== undefined) hints.push(`${schema.minLength}–${schema.maxLength} chars`)
+  if (schema.minLength !== undefined && schema.minLength === schema.maxLength) hints.push(`${schema.minLength} chars`)
+  else if (schema.minLength !== undefined && schema.maxLength !== undefined) hints.push(`${schema.minLength}–${schema.maxLength} chars`)
   else if (schema.maxLength !== undefined) hints.push(`≤ ${schema.maxLength} chars`)
   else if (schema.minLength) hints.push(`≥ ${schema.minLength} chars`)
   const min = typeof schema.exclusiveMinimum === 'number' ? `> ${schema.exclusiveMinimum}` : schema.minimum !== undefined ? `${schema.exclusiveMinimum === true ? '>' : '≥'} ${schema.minimum}` : undefined

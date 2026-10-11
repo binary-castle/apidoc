@@ -20,9 +20,12 @@ packages/standalone
 integrations/django
                   apidoc-django: ApiDocView serves the docs from your Django project,
                   bundle included as static files, CSRF wired for session auth.
+integrations/fastapi
+                  apidoc-fastapi: mount_apidoc(app) serves the docs and bundle from the app.
 examples/specs    Specs used for tests and the dev host:
                   orbit.yaml (hand-written 3.1), django-spectacular.yaml, django-yasg.json
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
+examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs.
 ```
 
 ## Getting started
@@ -43,7 +46,7 @@ Open `?spec=<url>` to load any spec, e.g.
 ### Django example (live "Try it")
 
 ```bash
-corepack pnpm build:django       # bundle -> integrations/django static files
+corepack pnpm build:integrations       # bundle -> integrations/django static files
 cd examples/django
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python manage.py migrate
@@ -55,6 +58,19 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
   Log in at `/admin/` first and playground requests use your session (CSRF handled).
 - Or pick **Django · drf-spectacular (live)** in the UI dev host's switcher
   (bottom-right) to load the same API cross-origin.
+
+### FastAPI example
+
+```bash
+corepack pnpm build:integrations
+cd examples/fastapi
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn main:app --port 8001
+```
+
+http://localhost:8001/docs is apidoc; FastAPI's Swagger UI is at `/swagger`.
+Regenerate the fixture with
+`.venv/bin/python -c "import json, main; json.dump(main.app.openapi(), open('../specs/fastapi.json', 'w'), indent=2)"`.
 
 Regenerate the fixtures after changing the example:
 
@@ -97,13 +113,14 @@ that framework's spec URL. Serving docs from the API's own domain also makes
 | Backend | Package | Docs |
 |---|---|---|
 | Django (DRF, drf-spectacular, drf-yasg, django-ninja) | `apidoc-django` | [integrations/django](integrations/django/README.md) |
+| FastAPI | `apidoc-fastapi` | [integrations/fastapi](integrations/fastapi/README.md) |
 | Anything else | `<api-docs>` + the bundle | see "Embedding anywhere" above |
 
 Session-cookie APIs get CSRF support from the element's `csrf-header`,
 `csrf-cookie` and `csrf-token` attributes (Django, Rails and Laravel all fit).
 The token is only sent on unsafe, same-origin requests.
 
-Integration tests: `cd integrations/django && python runtests.py`.
+Integration tests: `python runtests.py` in `integrations/django` and `integrations/fastapi`.
 
 ## Status
 
@@ -113,9 +130,10 @@ Done:
 - Dark and light themes, mobile layout
 - `packages/standalone`: `<api-docs>` web component, Shadow DOM isolated
 - `apidoc-django`: docs served by Django, session auth + CSRF, CSP nonces
+- `apidoc-fastapi`: `mount_apidoc(app)`, root_path aware, can replace Swagger UI
 
 Next:
-- Integrations: FastAPI, Express/NestJS
+- Integrations: Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
 - Contract check (validate live responses against the spec with Ajv)
 - Changelog / spec diff (A04), Workflows / Arazzo (A05)

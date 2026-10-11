@@ -1,4 +1,4 @@
-import { applyCsrf, generateSnippet, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
+import { applyCsrf, generateSnippet, unwrapNullable, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { bodyForMedia, defaultDraft, draftToRequest, type Draft } from '../lib/draft'
 import { readStored, writeStored } from '../lib/storage'
@@ -48,7 +48,7 @@ function ParamInputs({ parameters, values, onChange }: { parameters: ParameterMo
   return (
     <div className="flex flex-col gap-3.5">
       {parameters.map(parameter => {
-        const schema = resolver.schema(parameter.schema).value
+        const schema = unwrapNullable(parameter.schema, resolver)
         const options = schema?.enum ?? (schema?.items ? resolver.schema(schema.items).value?.enum : undefined)
         const value = values[parameter.name] ?? ''
         const missing = parameter.required && !value
@@ -189,7 +189,7 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
   const [sending, setSending] = useState(false)
   const abort = useRef<AbortController>(undefined)
 
-  const request = useMemo(() => draftToRequest(operation, draft, { baseUrl, model, credentials }), [operation, draft, baseUrl, model, credentials])
+  const request = useMemo(() => draftToRequest(operation, draft, { baseUrl, model, resolver, credentials }), [operation, draft, baseUrl, model, resolver, credentials])
   const paramList = operation.parameters.filter(p => p.in !== 'header')
   const headerParams = operation.parameters.filter(p => p.in === 'header')
   const missing = operation.parameters.filter(p => p.required && !{ path: draft.pathParams, query: draft.query, header: draft.headers, cookie: draft.cookies }[p.in][p.name])

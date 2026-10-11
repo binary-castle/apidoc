@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loadSpec, Resolver, SpecError, typeLabel } from '../src'
+import { constraintHints, loadSpec, objectProperties, Resolver, sampleFromSchema, SpecError, typeLabel, unwrapNullable } from '../src'
 import { readSpec } from './fixtures'
 
 describe('loadSpec', () => {
@@ -39,6 +39,33 @@ describe('loadSpec', () => {
     expect(create.summary).toBe('Create a customer')
     expect(create.requestBody?.content.map(c => c.mediaType)).toContain('application/json')
     expect(Object.keys(model.securitySchemes).sort()).toEqual(['basicAuth', 'cookieAuth', 'tokenAuth'])
+  })
+
+  it('reads FastAPI output (3.1, anyOf-null optionals)', async () => {
+    const model = await loadSpec({ content: readSpec('fastapi.json') })
+    expect(model.specVersion).toBe('3.1.0')
+    expect(model.tags.map(t => t.name)).toEqual(['Customers', 'Payments'])
+    const resolver = new Resolver(model.document)
+    const create = model.operations.find(o => o.operationId === 'create_customer_v1_customers_post')!
+    expect(create.responses.map(r => r.status)).toEqual(['201', '409', '422'])
+
+    const body = create.requestBody!.content[0]!.schema
+    const props = Object.fromEntries(objectProperties(body, resolver).map(p => [p.name, p]))
+    expect(props.email!.required).toBe(true)
+    // Optional fields are anyOf [X, null]: labels and constraints come from X.
+    expect(typeLabel(props.address!.schema, resolver)).toMatchObject({ refName: 'Address', nullable: true })
+    expect(unwrapNullable(props.name!.schema, resolver)).toMatchObject({ type: 'string', maxLength: 256, title: 'Name', nullable: true })
+    expect(constraintHints(unwrapNullable(props.name!.schema, resolver))).toEqual(['≤ 256 chars'])
+    expect(constraintHints({ minLength: 2, maxLength: 2 })).toEqual(['2 chars'])
+    expect(constraintHints({ minLength: 1, maxLength: 64 })).toEqual(['1–64 chars'])
+
+    const email = model.operations.find(o => o.summary === 'List customers')!.parameters.find(p => p.name === 'email')!
+    expect(unwrapNullable(email.schema, resolver)).toMatchObject({ type: 'string', description: 'Filter by exact email.' })
+    // Non-nullable unions are left alone.
+    expect(unwrapNullable({ anyOf: [{ type: 'string' }, { type: 'integer' }] }, resolver)).toHaveProperty('anyOf')
+
+    const sample = sampleFromSchema(body, resolver, 'request') as Record<string, unknown>
+    expect(sample).toMatchObject({ email: 'ada@example.com', address: { country: 'GB' }, metadata: {} })
   })
 
   it('upgrades drf-yasg Swagger 2.0 output', async () => {

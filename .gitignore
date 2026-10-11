@@ -13,7 +13,8 @@ __pycache__/
 .venv/
 examples/django/db.sqlite3
 
-# built JS bundle copied into the Django package (pnpm build:django)
+# built JS bundle copied into the Python packages (pnpm build:integrations)
 integrations/django/src/apidoc_django/static/apidoc_django/
+integrations/fastapi/src/apidoc_fastapi/static/
 *.egg-info/
 build/

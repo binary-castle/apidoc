@@ -80,8 +80,8 @@ allow `font-src 'self' data:`.
 From the apidoc repository:
 
 ```bash
-corepack pnpm build:django      # build the JS bundle into src/apidoc_django/static/
-python runtests.py              # needs Django installed
+corepack pnpm build:integrations   # build the JS bundle into src/apidoc_django/static/
+python runtests.py                  # needs Django installed
 ```
 
 `python manage.py check` warns (`apidoc_django.W001`) when the bundle is

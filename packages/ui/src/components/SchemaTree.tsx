@@ -1,4 +1,4 @@
-import { constraintHints, isNullable, mergeAllOf, objectProperties, schemaTypes, typeLabel, type SampleMode, type SchemaObject } from '@apidoc/core'
+import { constraintHints, isNullable, mergeAllOf, objectProperties, schemaTypes, typeLabel, unwrapNullable, type SampleMode, type SchemaObject } from '@apidoc/core'
 import { useState, type ReactNode } from 'react'
 import { renderMarkdown } from '../lib/markdown'
 import { useDocs } from '../state'
@@ -54,7 +54,8 @@ function EnumValues({ values }: { values: unknown[] }) {
 
 export function FieldRow({ name, schema, required, depth, options, extraTags }: { name: string; schema: SchemaObject | undefined; required: boolean; depth: number; options: Options; extraTags?: ReactNode }) {
   const { resolver } = useDocs()
-  const resolved = resolver.schema(schema).value
+  // Optional fields are often anyOf [X, null]; constraints and enums live on X.
+  const resolved = unwrapNullable(schema, resolver)
   const nested = childrenOf(schema, resolver)
   const [open, setOpen] = useState(depth === 0 && nested?.kind === 'object' && (resolver.schema(schema).ref === undefined))
   const label = typeLabel(schema, resolver)

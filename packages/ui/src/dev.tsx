@@ -5,11 +5,12 @@ import './styles.css'
 
 /**
  * Dev host: renders the reference for ?spec=<url> (default: the Orbit example)
- * with a small switcher for the bundled example specs and the live Django app.
+ * with a small switcher for the bundled example specs and the live example apps.
  */
-const LIVE_DJANGO = [
+const LIVE_EXAMPLES = [
   { label: 'Django · drf-spectacular (live)', url: 'http://localhost:8000/api/schema/' },
   { label: 'Django · drf-yasg (live)', url: 'http://localhost:8000/api/swagger.json' },
+  { label: 'FastAPI (live)', url: 'http://localhost:8001/openapi.json' },
 ]
 
 function SpecSwitcher({ current }: { current: string }) {
@@ -20,7 +21,7 @@ function SpecSwitcher({ current }: { current: string }) {
       .then(setFiles)
       .catch(() => setFiles([]))
   }, [])
-  const options = [...files.map(f => ({ label: f, url: `/specs/${f}` })), ...LIVE_DJANGO]
+  const options = [...files.map(f => ({ label: f, url: `/specs/${f}` })), ...LIVE_EXAMPLES]
   return (
     <select
       value={current}

@@ -12,7 +12,7 @@ export function RequestSample({ operation }: { operation: OperationModel }) {
   const { model, resolver, baseUrl, credentials, navigate } = useDocs()
   const [target, setTarget] = useState(() => readStored('snippet-target', 'curl'))
   const snippet = useMemo(() => {
-    const request = draftToRequest(operation, defaultDraft(operation, resolver), { baseUrl, model, credentials, placeholders: true })
+    const request = draftToRequest(operation, defaultDraft(operation, resolver), { baseUrl, model, resolver, credentials, placeholders: true })
     return generateSnippet(target, request)
   }, [operation, resolver, baseUrl, model, credentials, target])
   const language = (SNIPPET_TARGETS.find(t => t.id === target)?.language ?? 'shellscript') as CodeLanguage

@@ -15,7 +15,7 @@ def check_bundle(app_configs, **kwargs):
         checks.Warning(
             "The apidoc JS bundle is missing, so /docs pages will render empty.",
             hint=(
-                "Wheels from PyPI include it. In a source checkout run `pnpm build:django` "
+                "Wheels from PyPI include it. In a source checkout run `pnpm build:integrations` "
                 "in the apidoc repo, or set APIDOC['BUNDLE_URL'] to a CDN copy."
             ),
             id="apidoc_django.W001",

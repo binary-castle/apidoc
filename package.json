@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter @apidoc/ui dev",
     "build": "pnpm -r run build",
-    "build:django": "pnpm --filter @apidoc/standalone build && node scripts/copy-django-bundle.mjs",
+    "build:integrations": "pnpm --filter @apidoc/standalone build && node scripts/copy-python-bundles.mjs",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck"
   },

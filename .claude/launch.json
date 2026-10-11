@@ -4,22 +4,48 @@
     {
       "name": "apidoc-ui",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": ["pnpm", "--filter", "@apidoc/ui", "dev"],
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@apidoc/ui",
+        "dev"
+      ],
       "port": 5173,
       "autoPort": true
     },
     {
       "name": "standalone-preview",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": ["pnpm", "--filter", "@apidoc/standalone", "preview"],
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@apidoc/standalone",
+        "preview"
+      ],
       "port": 5180,
       "autoPort": true
     },
     {
       "name": "django-example",
       "runtimeExecutable": "examples/django/.venv/bin/python",
-      "runtimeArgs": ["examples/django/manage.py", "runserver", "8000"],
+      "runtimeArgs": [
+        "examples/django/manage.py",
+        "runserver",
+        "8000"
+      ],
       "port": 8000
+    },
+    {
+      "name": "fastapi-example",
+      "runtimeExecutable": "examples/fastapi/.venv/bin/uvicorn",
+      "runtimeArgs": [
+        "main:app",
+        "--app-dir",
+        "examples/fastapi",
+        "--port",
+        "8001"
+      ],
+      "port": 8001
     }
   ]
 }
