@@ -1,0 +1,483 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Orbit Payments API",
+        "description": "Swagger 2.0 output from drf-yasg.",
+        "version": "v1"
+    },
+    "host": "localhost:8000",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/api",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "Basic": {
+            "type": "basic"
+        }
+    },
+    "security": [
+        {
+            "Basic": []
+        }
+    ],
+    "paths": {
+        "/schema/": {
+            "get": {
+                "operationId": "schema_list",
+                "summary": "OpenApi3 schema for this API. Format can be selected via content negotiation.",
+                "description": "- YAML: application/vnd.oai.openapi\n- JSON: application/vnd.oai.openapi+json",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/vnd.oai.openapi",
+                    "application/yaml",
+                    "application/vnd.oai.openapi+json",
+                    "application/json"
+                ],
+                "tags": [
+                    "schema"
+                ]
+            },
+            "parameters": []
+        },
+        "/v1/customers/": {
+            "get": {
+                "operationId": "v1_customers_list",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Customer"
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "post": {
+                "operationId": "v1_customers_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": []
+        },
+        "/v1/customers/{id}/": {
+            "get": {
+                "operationId": "v1_customers_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "put": {
+                "operationId": "v1_customers_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "patch": {
+                "operationId": "v1_customers_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "delete": {
+                "operationId": "v1_customers_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this customer.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/v1/customers/{id}/archive/": {
+            "post": {
+                "operationId": "v1_customers_archive",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Customer"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this customer.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/v1/payments/": {
+            "get": {
+                "operationId": "v1_payments_list",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Payment"
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "post": {
+                "operationId": "v1_payments_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Payment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Payment"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": []
+        },
+        "/v1/payments/{id}/": {
+            "get": {
+                "operationId": "v1_payments_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Payment"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this payment.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/v1/payments/{id}/refund/": {
+            "post": {
+                "operationId": "v1_payments_refund",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Payment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Payment"
+                        }
+                    }
+                },
+                "tags": [
+                    "v1"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this payment.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "Address": {
+            "required": [
+                "line1",
+                "country"
+            ],
+            "type": "object",
+            "properties": {
+                "line1": {
+                    "title": "Line1",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "city": {
+                    "title": "City",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "postal_code": {
+                    "title": "Postal code",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "country": {
+                    "title": "Country",
+                    "description": "ISO-3166 alpha-2 country code.",
+                    "type": "string",
+                    "maxLength": 2,
+                    "minLength": 1
+                }
+            }
+        },
+        "Customer": {
+            "required": [
+                "email"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "email": {
+                    "title": "Email",
+                    "description": "Unique per account. Used for receipts.",
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254,
+                    "minLength": 1
+                },
+                "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "maxLength": 256
+                },
+                "country": {
+                    "title": "Country",
+                    "description": "ISO-3166 alpha-2 country code.",
+                    "type": "string",
+                    "maxLength": 2
+                },
+                "balance": {
+                    "title": "Balance",
+                    "description": "Balance in the smallest currency unit.",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "archived": {
+                    "title": "Archived",
+                    "type": "boolean",
+                    "readOnly": true
+                },
+                "address": {
+                    "$ref": "#/definitions/Address"
+                },
+                "metadata": {
+                    "title": "Metadata",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "created": {
+                    "title": "Created",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "Payment": {
+            "required": [
+                "customer",
+                "amount"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "customer": {
+                    "title": "Customer",
+                    "type": "integer"
+                },
+                "amount": {
+                    "title": "Amount",
+                    "description": "Amount in the smallest currency unit, e.g. 4900 for £49.00.",
+                    "type": "integer",
+                    "maximum": 9223372036854775807,
+                    "minimum": 0
+                },
+                "currency": {
+                    "title": "Currency",
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 1
+                },
+                "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "succeeded",
+                        "failed",
+                        "refunded"
+                    ],
+                    "readOnly": true
+                },
+                "description": {
+                    "title": "Description",
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "created": {
+                    "title": "Created",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        }
+    }
+}

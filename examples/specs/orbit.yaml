@@ -1,0 +1,353 @@
+openapi: 3.1.0
+info:
+  title: Orbit Payments API
+  version: 2.4.0
+  summary: Payments, customers and invoices.
+  description: |
+    The Orbit API is organised around REST. It accepts JSON request bodies,
+    returns JSON responses, and uses standard HTTP status codes.
+
+    Authenticate with a secret key as a **Bearer** token. Use `sk_test_…` keys
+    against the sandbox; nothing you do there moves real money.
+servers:
+  - url: https://api.sandbox.orbit.dev
+    description: Sandbox
+  - url: https://api.orbit.dev
+    description: Production
+  - url: http://localhost:{port}
+    description: Local
+    variables:
+      port:
+        default: "8080"
+security:
+  - bearerAuth: []
+tags:
+  - name: Customers
+    description: Customers you can attach payment methods and subscriptions to.
+  - name: Payments
+    description: Charge customers and refund payments.
+  - name: Invoices
+paths:
+  /v2/customers:
+    get:
+      operationId: listCustomers
+      summary: List customers
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - name: email
+          in: query
+          description: Only return customers with this exact email.
+          schema: { type: string, format: email }
+        - name: created[gte]
+          in: query
+          description: Only return customers created at or after this Unix timestamp.
+          schema: { type: integer }
+      responses:
+        '200':
+          description: A page of customers.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerList' }
+    post:
+      operationId: createCustomer
+      summary: Create a customer
+      description: |
+        Creates a customer you can attach payment methods and subscriptions to.
+        Emails are unique per account — sending a duplicate returns `409` with the existing customer id.
+      tags: [Customers]
+      x-rate-limit: 100/min
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerCreate' }
+            example:
+              email: ada@lovelace.dev
+              name: Ada Lovelace
+              address: { line1: "12 St James's Sq", city: London, country: GB }
+      responses:
+        '201':
+          description: The created customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '409':
+          description: A customer with this email already exists.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { type: conflict, message: Email already in use., existing_id: cus_9Hq2LxP0aB }
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /v2/customers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CustomerId'
+    get:
+      operationId: retrieveCustomer
+      summary: Retrieve a customer
+      tags: [Customers]
+      responses:
+        '200':
+          description: The customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateCustomer
+      summary: Update a customer
+      tags: [Customers]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerUpdate' }
+      responses:
+        '200':
+          description: The updated customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      operationId: deleteCustomer
+      summary: Delete a customer
+      description: Deprecated. Use `POST /v2/customers/{id}/archive` instead; deletion stops working on Mar 1, 2027.
+      deprecated: true
+      tags: [Customers]
+      responses:
+        '204': { description: Deleted. }
+  /v2/customers/{id}/archive:
+    post:
+      operationId: archiveCustomer
+      summary: Archive a customer
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: The archived customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+  /v2/payments/intents:
+    post:
+      operationId: createPaymentIntent
+      summary: Create a payment intent
+      tags: [Payments]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentIntentCreate' }
+      responses:
+        '200':
+          description: The payment intent.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentIntent' }
+        '402':
+          description: The card was declined.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /v2/payments/{id}/refund:
+    post:
+      operationId: refundPayment
+      summary: Refund a payment
+      tags: [Payments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, examples: [pi_3Nq8sL2eZvKYlo2C] }
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount: { type: integer, minimum: 1, description: Partial amount. Omit to refund in full. }
+                reason: { type: string, enum: [duplicate, fraudulent, requested_by_customer] }
+      responses:
+        '200':
+          description: The refunded payment intent.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentIntent' }
+  /v2/invoices:
+    get:
+      operationId: listInvoices
+      summary: List invoices
+      tags: [Invoices]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - name: status
+          in: query
+          style: form
+          explode: false
+          schema:
+            type: array
+            items: { type: string, enum: [draft, open, paid, void] }
+      responses:
+        '200':
+          description: A page of invoices.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Invoice' } }
+                  has_more: { type: boolean }
+  /v2/invoices/{id}/pdf:
+    get:
+      operationId: downloadInvoicePdf
+      summary: Download an invoice PDF
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+        - apiKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: The PDF file.
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Secret key, e.g. `sk_test_…`.
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Orbit-Key
+  parameters:
+    CustomerId:
+      name: id
+      in: path
+      required: true
+      description: The customer id.
+      schema: { type: string, examples: [cus_9Hq2LxP0aB] }
+    Limit:
+      name: limit
+      in: query
+      description: Page size.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Safely retry for 24h without creating duplicates.
+      schema: { type: string, format: uuid }
+  responses:
+    NotFound:
+      description: The resource does not exist.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: The request body failed validation.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { type: validation_error, message: 'address.country must be an ISO-3166 alpha-2 code', field: address.country }
+  schemas:
+    CountryCode:
+      type: string
+      description: ISO-3166 alpha-2 country code.
+      pattern: '^[A-Z]{2}$'
+      examples: [GB]
+    Address:
+      type: object
+      required: [line1]
+      properties:
+        line1: { type: string }
+        city: { type: string }
+        postal_code: { type: string }
+        country: { $ref: '#/components/schemas/CountryCode' }
+    Customer:
+      type: object
+      required: [id, object, email, created]
+      properties:
+        id: { type: string, readOnly: true, examples: [cus_9Hq2LxP0aB] }
+        object: { const: customer }
+        email: { type: string, format: email }
+        name: { type: [string, 'null'], maxLength: 256 }
+        balance: { type: integer, description: Balance in the smallest currency unit. }
+        livemode: { type: boolean }
+        address: { $ref: '#/components/schemas/Address' }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+        created: { type: integer, description: Unix timestamp., examples: [1760140800] }
+    CustomerCreate:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, description: Unique per account. Used for receipts. }
+        name: { type: string, maxLength: 256 }
+        address: { $ref: '#/components/schemas/Address' }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+    CustomerUpdate:
+      allOf:
+        - $ref: '#/components/schemas/CustomerCreate'
+        - type: object
+          properties:
+            default_payment_method: { type: string }
+    CustomerList:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Customer' } }
+        has_more: { type: boolean }
+    PaymentIntentCreate:
+      type: object
+      required: [amount, currency, customer]
+      properties:
+        amount: { type: integer, minimum: 50, description: 'Amount in the smallest currency unit, e.g. 4900 for £49.00.' }
+        currency: { type: string, enum: [gbp, usd, eur] }
+        customer: { type: string }
+        payment_method: { type: string }
+        confirm: { type: boolean, default: false }
+    PaymentIntent:
+      type: object
+      properties:
+        id: { type: string, examples: [pi_3Nq8sL2eZvKYlo2C] }
+        amount: { type: integer }
+        currency: { type: string }
+        status: { type: string, enum: [requires_payment_method, requires_confirmation, processing, succeeded, canceled] }
+        customer: { type: string }
+    Invoice:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [draft, open, paid, void] }
+        total: { type: integer }
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              description: { type: string }
+              amount: { type: integer }
+              tax_rate: { type: [number, 'null'] }
+    Error:
+      type: object
+      required: [type, message]
+      properties:
+        type: { type: string }
+        message: { type: string }
+        field: { type: string }
+        existing_id: { type: string }

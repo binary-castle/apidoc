@@ -1,0 +1,14 @@
+node_modules/
+dist/
+
+*.tsbuildinfo
+.DS_Store
+
+# design previews and scratch renders
+.preview/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+examples/django/db.sqlite3

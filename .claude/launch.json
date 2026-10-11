@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "apidoc-ui",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": ["pnpm", "--filter", "@apidoc/ui", "dev"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "django-example",
+      "runtimeExecutable": "examples/django/.venv/bin/python",
+      "runtimeArgs": ["examples/django/manage.py", "runserver", "8000"],
+      "port": 8000
+    }
+  ]
+}

@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: Orbit Payments API
+  version: 1.0.0
+  description: Example DRF project used to develop and test apidoc.
+paths:
+  /api/v1/customers/:
+    get:
+      operationId: v1_customers_list
+      summary: List customers
+      parameters:
+      - in: query
+        name: archived
+        schema:
+          type: boolean
+        description: Include archived customers.
+      - in: query
+        name: email
+        schema:
+          type: string
+        description: Filter by exact email.
+      tags:
+      - Customers
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+          description: ''
+    post:
+      operationId: v1_customers_create
+      description: Creates a customer you can attach payment methods and subscriptions
+        to. Emails are unique per account — sending a duplicate returns 400 with the
+        existing customer id.
+      summary: Create a customer
+      tags:
+      - Customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/customers/{id}/:
+    get:
+      operationId: v1_customers_retrieve
+      summary: Retrieve a customer
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - Customers
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    put:
+      operationId: v1_customers_update
+      summary: Replace a customer
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - Customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: v1_customers_partial_update
+      summary: Update a customer
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - Customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    delete:
+      operationId: v1_customers_destroy
+      description: 'Deprecated: use the archive endpoint instead.'
+      summary: Delete a customer
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - Customers
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      deprecated: true
+      responses:
+        '204':
+          description: No response body
+  /api/v1/customers/{id}/archive/:
+    post:
+      operationId: v1_customers_archive_create
+      summary: Archive a customer
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - Customers
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/payments/:
+    get:
+      operationId: v1_payments_list
+      summary: List payments
+      tags:
+      - Payments
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+          description: ''
+    post:
+      operationId: v1_payments_create
+      summary: Create a payment
+      tags:
+      - Payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/{id}/:
+    get:
+      operationId: v1_payments_retrieve
+      summary: Retrieve a payment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment.
+        required: true
+      tags:
+      - Payments
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/{id}/refund/:
+    post:
+      operationId: v1_payments_refund_create
+      summary: Refund a payment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment.
+        required: true
+      tags:
+      - Payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refund'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Refund'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Refund'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        line1:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+          description: ISO-3166 alpha-2 country code.
+          maxLength: 2
+      required:
+      - country
+      - line1
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: Unique per account. Used for receipts.
+          maxLength: 254
+        name:
+          type: string
+          maxLength: 256
+        country:
+          type: string
+          description: ISO-3166 alpha-2 country code.
+          maxLength: 2
+        balance:
+          type: integer
+          readOnly: true
+          description: Balance in the smallest currency unit.
+        archived:
+          type: boolean
+          readOnly: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          writeOnly: true
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - archived
+      - balance
+      - created
+      - email
+      - id
+    PatchedCustomer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: Unique per account. Used for receipts.
+          maxLength: 254
+        name:
+          type: string
+          maxLength: 256
+        country:
+          type: string
+          description: ISO-3166 alpha-2 country code.
+          maxLength: 2
+        balance:
+          type: integer
+          readOnly: true
+          description: Balance in the smallest currency unit.
+        archived:
+          type: boolean
+          readOnly: true
+        address:
+          allOf:
+          - $ref: '#/components/schemas/Address'
+          writeOnly: true
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        customer:
+          type: integer
+        amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Amount in the smallest currency unit, e.g. 4900 for £49.00.
+        currency:
+          type: string
+          maxLength: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        description:
+          type: string
+          maxLength: 500
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created
+      - customer
+      - id
+      - status
+    ReasonEnum:
+      enum:
+      - duplicate
+      - fraudulent
+      - requested_by_customer
+      type: string
+      description: |-
+        * `duplicate` - duplicate
+        * `fraudulent` - fraudulent
+        * `requested_by_customer` - requested_by_customer
+    Refund:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Partial refund amount. Omit to refund in full.
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+    StatusEnum:
+      enum:
+      - pending
+      - succeeded
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `succeeded` - Succeeded
+        * `failed` - Failed
+        * `refunded` - Refunded
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
+servers:
+- url: http://localhost:8000
+  description: Local Django
