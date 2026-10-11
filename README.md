@@ -21,6 +21,10 @@ packages/cli      `apidoc diff <old> <new> --fail-on breaking` for CI (files, UR
 packages/standalone
                   <api-docs> web component: one ES module (dist/apidoc.js) with React
                   bundled, rendered in Shadow DOM so host-page CSS can't leak in.
+packages/express
+                  @binarycastle/apidoc-express: Express middleware, plus the
+                  framework-agnostic Node core (page, bundle and spec serving).
+packages/nestjs   @binarycastle/apidoc-nestjs: ApidocModule.setup(), Express or Fastify adapter.
 integrations/django
                   apidoc-django: ApiDocView serves the docs from your Django project,
                   bundle included as static files, CSRF wired for session auth.
@@ -31,6 +35,8 @@ examples/specs    Specs used for tests and the dev host:
                   django-spectacular.yaml, django-yasg.json, fastapi.json
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
 examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs.
+examples/express  Express 5 app with a hand-written openapi.yaml.
+examples/nestjs   NestJS 12 app documented by @nestjs/swagger.
 ```
 
 ## Getting started
@@ -40,7 +46,8 @@ pnpm is pinned in `package.json` and run through Corepack (bundled with Node):
 ```bash
 corepack pnpm install
 corepack pnpm dev            # http://localhost:5173 (PORT env overrides)
-corepack pnpm test           # core unit tests
+corepack pnpm build          # needed once before typecheck/test (the Node integrations use the build)
+corepack pnpm test
 corepack pnpm typecheck
 ```
 
@@ -79,7 +86,15 @@ http://localhost:8001/docs is apidoc; FastAPI's Swagger UI is at `/swagger`.
 Regenerate the fixture with
 `.venv/bin/python -c "import json, main; json.dump(main.app.openapi(), open('../specs/fastapi.json', 'w'), indent=2)"`.
 
-Regenerate the fixtures after changing the example:
+### Express and NestJS examples
+
+```bash
+corepack pnpm build
+node examples/express/server.js        # http://localhost:3000/docs/  (token: sk_test_demo)
+node examples/nestjs/dist/main.js      # http://localhost:3001/docs/  (Swagger UI at /swagger)
+```
+
+Regenerate the Django fixtures after changing that example:
 
 ```bash
 .venv/bin/python manage.py spectacular --file ../specs/django-spectacular.yaml
@@ -121,13 +136,18 @@ that framework's spec URL. Serving docs from the API's own domain also makes
 |---|---|---|
 | Django (DRF, drf-spectacular, drf-yasg, django-ninja) | `apidoc-django` | [integrations/django](integrations/django/README.md) |
 | FastAPI | `apidoc-fastapi` | [integrations/fastapi](integrations/fastapi/README.md) |
+| Express 4/5 | `@binarycastle/apidoc-express` | [packages/express](packages/express/README.md) |
+| NestJS 10–12 (Express or Fastify) | `@binarycastle/apidoc-nestjs` | [packages/nestjs](packages/nestjs/README.md) |
+| Other Node servers | `createApidoc()` from `@binarycastle/apidoc-express` | [packages/express](packages/express/README.md#other-node-frameworks) |
 | Anything else | `<api-docs>` + the bundle | see "Embedding anywhere" above |
 
 Session-cookie APIs get CSRF support from the element's `csrf-header`,
 `csrf-cookie` and `csrf-token` attributes (Django, Rails and Laravel all fit).
 The token is only sent on unsafe, same-origin requests.
 
-Integration tests: `python runtests.py` in `integrations/django` and `integrations/fastapi`.
+Integration tests: `python runtests.py` in `integrations/django` and
+`integrations/fastapi`; the Express (4 and 5) and NestJS (Express and Fastify
+adapters) tests run with `corepack pnpm test`.
 
 ## Packages
 
@@ -135,6 +155,8 @@ Integration tests: `python runtests.py` in `integrations/django` and `integratio
 |---|---|---|
 | [`@binarycastle/apidoc`](packages/standalone/README.md) | npm / jsDelivr | The `<api-docs>` web component bundle |
 | [`@binarycastle/apidoc-cli`](packages/cli/README.md) | npm | `apidoc diff` (breaking changes) and `apidoc run` (Arazzo smoke tests) for CI |
+| [`@binarycastle/apidoc-express`](packages/express/README.md) | npm | Docs served by Express (or any Node server) |
+| [`@binarycastle/apidoc-nestjs`](packages/nestjs/README.md) | npm | `ApidocModule.setup()` for NestJS |
 | [`apidoc-django`](integrations/django/README.md) | PyPI | Docs served by Django, bundle included |
 | [`apidoc-fastapi`](integrations/fastapi/README.md) | PyPI | Docs served by FastAPI, bundle included |
 
@@ -143,7 +165,7 @@ the above) and are not published yet. Everything is MIT licensed.
 
 ## Releasing
 
-All four packages share one version and are released together by
+All six packages share one version and are released together by
 [`.github/workflows/release.yml`](.github/workflows/release.yml) when a `v*` tag is pushed:
 
 ```bash
@@ -163,7 +185,7 @@ One-time setup before the first release:
    `packages/*/package.json` and `[project.urls]` in the pyprojects if it lives elsewhere).
 2. npm: create the `binarycastle` organization, then add an automation token
    as the `NPM_TOKEN` repository secret. After the first publish you can switch
-   both packages to trusted publishing on npmjs.com and delete the secret.
+   the npm packages to trusted publishing on npmjs.com and delete the secret.
 3. PyPI: add a "pending trusted publisher" for `apidoc-django` and
    `apidoc-fastapi` (owner/repo, workflow `release.yml`, environment `pypi`),
    and create the `pypi` environment in the GitHub repository settings.
@@ -184,6 +206,8 @@ Done:
   rules, NEW/CHANGED badges, Markdown upgrade notes, and `apidoc diff` for CI
 - Workflows: Arazzo 1.0 runner in the docs (run all / step through, live
   timeline, per-step contract check), script export, and `apidoc run` for CI
+- `@binarycastle/apidoc-express` (Express 4/5, plain Node) and
+  `@binarycastle/apidoc-nestjs` (NestJS 10–12 on Express or Fastify)
 
 ## Changelog and breaking changes
 
@@ -194,7 +218,8 @@ Give the docs your older releases and they show what changed:
   versions='[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'></api-docs>
 ```
 
-(`versions` on `<ApiReference>`, `APIDOC["VERSIONS"]` in Django, `versions=` in FastAPI.)
+(`versions` on `<ApiReference>`, `APIDOC["VERSIONS"]` in Django, `versions=` in FastAPI,
+`versions` in the Express and NestJS options.)
 The Changelog page lists releases, compares any two, groups changes per
 endpoint with before/after schema fragments, and writes Markdown upgrade notes.
 Endpoints get NEW/CHANGED badges. Without configured versions you can still
@@ -228,7 +253,7 @@ and can be run from the docs:
 ```
 
 (`workflows` on `<ApiReference>`, `workflows_url=` / `APIDOC["WORKFLOWS_URL"]` in
-Django, `workflows_url=` in FastAPI.) Each workflow gets a page with an inputs
+Django, `workflows_url=` in FastAPI, `workflowsUrl` for Express and NestJS.) Each workflow gets a page with an inputs
 form, **Run all** or **Step through**, and a live timeline: what each step
 uses from earlier steps, its outputs, its success criteria and whether the
 response matches the spec. Runs use the same credentials and CSRF handling as
@@ -270,6 +295,5 @@ incomplete. The validator is interpreted (no `eval`/`new Function`), so it runs
 under a strict Content-Security-Policy.
 
 Next:
-- Integrations: Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
 - Optional proxy for cross-origin "Try it" and DNS/TLS timing

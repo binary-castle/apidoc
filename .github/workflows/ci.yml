@@ -29,9 +29,11 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
 
+      # Build first: the Node integrations type-check against each other's
+      # declarations and their tests serve the built bundle.
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
       - name: Copy the bundle into the Python packages
         run: node scripts/copy-python-bundles.mjs
       - name: Versions agree

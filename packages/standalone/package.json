@@ -23,7 +23,8 @@
   },
   "type": "module",
   "exports": {
-    ".": "./dist/apidoc.js"
+    ".": "./dist/apidoc.js",
+    "./package.json": "./package.json"
   },
   "module": "./dist/apidoc.js",
   "jsdelivr": "dist/apidoc.js",

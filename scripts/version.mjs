@@ -11,7 +11,7 @@ const SEMVER = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
 
 /** [file, read(text) -> version, write(text, version) -> text] */
 const targets = [
-  ...['packages/standalone/package.json', 'packages/cli/package.json'].map(file => [
+  ...['packages/standalone/package.json', 'packages/cli/package.json', 'packages/express/package.json', 'packages/nestjs/package.json'].map(file => [
     file,
     text => JSON.parse(text).version,
     (text, version) => text.replace(/("version":\s*")[^"]+(")/, `$1${version}$2`),

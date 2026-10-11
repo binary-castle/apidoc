@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // CommonJS output: loads from CommonJS (NestJS ≤ 11, most Express apps) and ESM alike.
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "verbatimModuleSyntax": false,
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["src", "test"]
+}

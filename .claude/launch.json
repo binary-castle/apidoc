@@ -46,6 +46,22 @@
         "8001"
       ],
       "port": 8001
+    },
+    {
+      "name": "express-example",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "examples/express/server.js"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "nestjs-example",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "examples/nestjs/dist/main.js"
+      ],
+      "port": 3001
     }
   ]
 }

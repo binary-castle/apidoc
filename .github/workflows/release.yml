@@ -24,9 +24,11 @@ jobs:
           node-version: 24
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
+      # Build first: the Node integrations type-check against each other's
+      # declarations and their tests serve the built bundle.
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
       - run: node scripts/copy-python-bundles.mjs
 
       - name: Pack npm packages
@@ -34,6 +36,8 @@ jobs:
           mkdir -p dist/npm
           pnpm --filter @binarycastle/apidoc pack --pack-destination "$PWD/dist/npm"
           pnpm --filter @binarycastle/apidoc-cli pack --pack-destination "$PWD/dist/npm"
+          pnpm --filter @binarycastle/apidoc-express pack --pack-destination "$PWD/dist/npm"
+          pnpm --filter @binarycastle/apidoc-nestjs pack --pack-destination "$PWD/dist/npm"
 
       - uses: actions/setup-python@v7
         with:

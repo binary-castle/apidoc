@@ -185,7 +185,7 @@ export function CommandPalette() {
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className={`truncate ${hit.kind === 'field' ? 'font-mono text-xs' : 'text-[13px]'} text-fg-2`}><Highlight text={hit.title} query={query} /></span>
-                      <span className="truncate font-mono text-[11px] text-subtle">{hit.subtitle}</span>
+                      {hit.subtitle !== hit.title && <span className="truncate font-mono text-[11px] text-subtle">{hit.subtitle}</span>}
                     </span>
                   </Command.Item>
                 ))}

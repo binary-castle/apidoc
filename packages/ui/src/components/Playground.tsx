@@ -411,8 +411,15 @@ export function Playground({ operationId }: { operationId?: string }) {
               <button key={op.id} type="button" onClick={() => navigate({ view: 'playground', id: op.id })} className="flex items-center gap-3 rounded-lg border border-line bg-card px-3 py-2.5 text-left hover:border-border-strong">
                 <MethodPill method={op.method} size="sm" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-[13px] text-fg">{op.summary ?? op.path}</span>
-                  <span className="truncate font-mono text-[11px] text-subtle"><PathText path={op.path} /></span>
+                  {/* Specs without summaries (common with NestJS) would show the path twice. */}
+                  {op.summary ? (
+                    <>
+                      <span className="truncate text-[13px] text-fg">{op.summary}</span>
+                      <span className="truncate font-mono text-[11px] text-subtle"><PathText path={op.path} /></span>
+                    </>
+                  ) : (
+                    <span className="truncate font-mono text-[13px] text-fg"><PathText path={op.path} /></span>
+                  )}
                 </span>
               </button>
             ))}

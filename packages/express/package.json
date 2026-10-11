@@ -1,0 +1,62 @@
+{
+  "name": "@binarycastle/apidoc-express",
+  "version": "0.1.0",
+  "description": "Serve apidoc (OpenAPI reference, playground, contract check, changelog, workflows) from an Express app.",
+  "keywords": [
+    "openapi",
+    "swagger",
+    "express",
+    "api-reference",
+    "api-docs",
+    "swagger-ui-alternative",
+    "scalar-alternative"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/binary-castle/apidoc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/binary-castle/apidoc.git",
+    "directory": "packages/express"
+  },
+  "bugs": {
+    "url": "https://github.com/binary-castle/apidoc/issues"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@binarycastle/apidoc": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "express": "^5.3.0",
+    "express4": "npm:express@^4.22.3",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

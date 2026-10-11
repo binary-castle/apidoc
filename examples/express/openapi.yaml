@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: Orbit Customers (Express)
+  version: 1.0.0
+  description: |
+    A small in-memory API served by Express, documented by a hand-written
+    OpenAPI file and rendered by `@binarycastle/apidoc-express`.
+
+    Authenticate with the bearer token `sk_test_demo`.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+tags:
+  - name: Customers
+paths:
+  /v1/customers:
+    get:
+      operationId: listCustomers
+      summary: List customers
+      tags: [Customers]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Customers, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+                  has_more: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      operationId: createCustomer
+      summary: Create a customer
+      tags: [Customers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+      responses:
+        '201':
+          description: The new customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/customers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, pattern: '^cus_[0-9]+$' }
+        example: cus_1
+    get:
+      operationId: getCustomer
+      summary: Retrieve a customer
+      tags: [Customers]
+      responses:
+        '200':
+          description: The customer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteCustomer
+      summary: Delete a customer
+      tags: [Customers]
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Use `sk_test_demo`.
+  schemas:
+    CustomerInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, example: ada@example.com }
+        name: { type: string, maxLength: 120, example: Ada Lovelace }
+    Customer:
+      type: object
+      required: [id, email, name, created]
+      properties:
+        id: { type: string, example: cus_1 }
+        email: { type: string, format: email }
+        name: { type: [string, 'null'] }
+        created: { type: integer, description: Unix timestamp. }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+  responses:
+    BadRequest:
+      description: The request body is invalid.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or wrong bearer token.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: No such customer.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

@@ -1,0 +1,67 @@
+{
+  "name": "@binarycastle/apidoc-nestjs",
+  "version": "0.1.0",
+  "description": "ApidocModule.setup(): apidoc (OpenAPI reference, playground, contract check, changelog, workflows) for NestJS, on Express or Fastify.",
+  "keywords": [
+    "openapi",
+    "swagger",
+    "nestjs",
+    "nest",
+    "api-reference",
+    "api-docs",
+    "swagger-ui-alternative",
+    "scalar-alternative"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/binary-castle/apidoc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/binary-castle/apidoc.git",
+    "directory": "packages/nestjs"
+  },
+  "bugs": {
+    "url": "https://github.com/binary-castle/apidoc/issues"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@binarycastle/apidoc-express": "workspace:*"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^12.1.2",
+    "@nestjs/core": "^12.1.2",
+    "@nestjs/platform-express": "^12.1.2",
+    "@nestjs/platform-fastify": "^12.1.2",
+    "@nestjs/swagger": "^12.0.2",
+    "@types/node": "^24.19.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
