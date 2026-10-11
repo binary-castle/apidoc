@@ -6,6 +6,7 @@ FastAPI example used to develop and test apidoc-fastapi.
 apidoc is at /docs; FastAPI's Swagger UI moved to /swagger for comparison.
 """
 
+import time
 from datetime import datetime, timezone
 from enum import Enum
 from itertools import count
@@ -16,6 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
 
 from apidoc_fastapi import mount_apidoc
+from oauth_server import require
+from oauth_server import router as oauth_router
 
 app = FastAPI(
     title="Orbit Payments API",
@@ -27,7 +30,8 @@ app = FastAPI(
         {"name": "Payments", "description": "Charge customers and refund payments."},
     ],
 )
-mount_apidoc(app, "/docs")
+mount_apidoc(app, "/docs", oauth_client_id="orbit-docs", oauth_scopes=["profile"])
+app.include_router(oauth_router)
 
 # The apidoc UI dev server (any local port) loads this API cross-origin.
 # /docs above is same-origin and needs none of this.
@@ -119,3 +123,16 @@ def refund_payment(payment_id: int) -> Payment:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Payment not found.")
     payments[payment_id].status = PaymentStatus.refunded
     return payments[payment_id]
+
+
+class Me(BaseModel):
+    subject: str = Field(description="The user, or the client for client credentials.")
+    scopes: list[str]
+    flow: str = Field(description="The OAuth grant that issued the token.")
+    expires_in: int
+
+
+@app.get("/v1/me", tags=["Account"], summary="Who am I", responses={401: {"description": "Missing or expired token."}, 403: {"description": "Token lacks the profile scope."}})
+def me(token: Annotated[dict, require("profile")]) -> Me:
+    """Needs an OAuth token with the `profile` scope. Use **Authorize** to sign in."""
+    return Me(subject=token["sub"], scopes=token["scopes"], flow=token["flow"], expires_in=int(token["exp"] - time.time()))

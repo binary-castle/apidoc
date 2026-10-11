@@ -30,6 +30,8 @@ def get_apidoc_html(
     logo_dark: str | None = None,
     css_url: str | None = None,
     favicon_url: str | None = None,
+    oauth_client_id: str | None = None,
+    oauth_scopes: list[str] | None = None,
 ) -> HTMLResponse:
     """
     The docs page as an HTMLResponse, like FastAPI's ``get_swagger_ui_html``.
@@ -51,6 +53,9 @@ def get_apidoc_html(
         "logo": logo,
         "logo-dark": logo_dark,
         "css-url": css_url,
+        # OAuth sign-in defaults for the playground.
+        "oauth-client-id": oauth_client_id,
+        "oauth-scopes": " ".join(oauth_scopes) if oauth_scopes else None,
         "nonce": nonce,
     }
     element_attrs = "".join(f' {name}="{escape(value)}"' for name, value in attrs.items() if value)
@@ -96,6 +101,8 @@ def mount_apidoc(
     logo_dark: str | None = None,
     css_url: str | None = None,
     favicon_url: str | None = None,
+    oauth_client_id: str | None = None,
+    oauth_scopes: list[str] | None = None,
 ) -> None:
     """
     Serve the apidoc reference at ``path`` and the JS bundle under ``{path}/_static``.
@@ -112,6 +119,8 @@ def mount_apidoc(
     ``workflows_url`` points at an Arazzo 1.x document with runnable workflows.
     Branding: ``accent`` (any CSS colour), ``logo``/``logo_dark``, ``css_url`` (a
     stylesheet that can override the ``--ad-*`` tokens) and ``favicon_url``.
+    ``oauth_client_id``/``oauth_scopes`` prefill OAuth sign-in in the playground;
+    register the docs URL as a redirect URI with your provider.
     """
     path = "/" + path.strip("/")
     if path == "/":
@@ -158,6 +167,8 @@ def mount_apidoc(
             logo_dark=prefixed(request, logo_dark) if logo_dark else None,
             css_url=prefixed(request, css_url) if css_url else None,
             favicon_url=prefixed(request, favicon_url) if favicon_url else None,
+            oauth_client_id=oauth_client_id,
+            oauth_scopes=oauth_scopes,
         )
 
     app.add_api_route(path, apidoc_page, methods=["GET"], include_in_schema=False, response_class=HTMLResponse)

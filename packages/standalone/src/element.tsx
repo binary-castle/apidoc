@@ -1,4 +1,4 @@
-import { ApiReference, type ApiReferenceProps, type ApiVersion, type Logo, type Theme } from '@apidoc/ui'
+import { ApiReference, type ApiReferenceProps, type ApiVersion, type Logo, type OAuthConfig, type Theme } from '@apidoc/ui'
 import themeCss from '@apidoc/ui/theme.css?inline'
 import { createRoot, type Root } from 'react-dom/client'
 
@@ -79,11 +79,14 @@ function inlineSpec(element: HTMLElement): string | undefined {
  * applied inside the shadow root after the built-in theme, so it can
  * override any `--ad-*` token or style `.apidoc` directly.
  *
+ * OAuth sign-in defaults: `oauth-client-id`, `oauth-scopes` (space-separated,
+ * preselected) and `oauth-redirect-url` (same-origin; defaults to this page).
+ *
  * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or
  * object); `customCss` takes CSS text, applied like `css-url`.
  */
 export class ApiDocsElement extends HTMLElement {
-  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions', 'workflows-url', 'accent', 'logo', 'logo-dark', 'logo-href', 'css-url']
+  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions', 'workflows-url', 'accent', 'logo', 'logo-dark', 'logo-href', 'css-url', 'oauth-client-id', 'oauth-scopes', 'oauth-redirect-url']
 
   #root?: Root
   #spec?: SpecInput
@@ -200,8 +203,25 @@ export class ApiDocsElement extends HTMLElement {
         workflows={this.getAttribute('workflows-url') ?? undefined}
         accent={this.getAttribute('accent') ?? undefined}
         logo={this.#logo()}
+        oauth={this.#oauth()}
       />,
     )
+  }
+
+  #oauthCache?: { key: string; value: OAuthConfig | undefined }
+
+  /** `oauth-*` attributes as one stable value. */
+  #oauth(): OAuthConfig | undefined {
+    const [clientId, scopes, redirectUrl] = [this.getAttribute('oauth-client-id'), this.getAttribute('oauth-scopes'), this.getAttribute('oauth-redirect-url')]
+    const key = `${clientId}|${scopes}|${redirectUrl}`
+    if (this.#oauthCache?.key !== key) {
+      const value =
+        clientId || scopes || redirectUrl
+          ? { clientId: clientId ?? undefined, scopes: scopes?.split(/\s+/).filter(Boolean), redirectUrl: redirectUrl ? new URL(redirectUrl, document.baseURI).toString() : undefined }
+          : undefined
+      this.#oauthCache = { key, value }
+    }
+    return this.#oauthCache.value
   }
 
   #logoCache?: { key: string; value: Logo | undefined }

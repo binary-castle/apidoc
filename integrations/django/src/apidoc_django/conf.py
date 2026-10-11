@@ -27,6 +27,10 @@ DEFAULTS = {
     # Stylesheet applied inside the docs after the built-in theme (override --ad-* tokens).
     "CSS_URL": None,
     "FAVICON": None,
+    # OAuth sign-in defaults for the playground: the docs' client id and scopes to preselect.
+    # Register the docs URL as a redirect URI with your provider.
+    "OAUTH_CLIENT_ID": None,
+    "OAUTH_SCOPES": [],
 }
 
 BUNDLE_STATIC_PATH = "apidoc_django/apidoc.js"

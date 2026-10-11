@@ -52,6 +52,8 @@ mount_apidoc(
     logo=None,          # top-bar logo URL; logo_dark= for a dark-theme variant
     css_url=None,       # stylesheet that can override any --ad-* token
     favicon_url=None,
+    oauth_client_id=None,  # prefill OAuth sign-in; register the docs URL as a redirect URI
+    oauth_scopes=None,     # scopes to preselect, e.g. ["profile"]
 )
 ```
 

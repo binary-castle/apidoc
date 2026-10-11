@@ -11,7 +11,7 @@
     </style>
   </head>
   <body>
-    <api-docs spec-url="{{ schema_url }}"{% if theme %} theme="{{ theme }}"{% endif %}{% if csrf_header %} csrf-header="{{ csrf_header }}" csrf-token="{{ csrf_token_value }}"{% if csrf_cookie %} csrf-cookie="{{ csrf_cookie }}"{% endif %}{% endif %}{% if versions_json %} versions="{{ versions_json }}"{% endif %}{% if workflows_url %} workflows-url="{{ workflows_url }}"{% endif %}{% if accent %} accent="{{ accent }}"{% endif %}{% if logo %} logo="{{ logo }}"{% endif %}{% if logo_dark %} logo-dark="{{ logo_dark }}"{% endif %}{% if css_url %} css-url="{{ css_url }}"{% endif %}{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></api-docs>
+    <api-docs spec-url="{{ schema_url }}"{% if theme %} theme="{{ theme }}"{% endif %}{% if csrf_header %} csrf-header="{{ csrf_header }}" csrf-token="{{ csrf_token_value }}"{% if csrf_cookie %} csrf-cookie="{{ csrf_cookie }}"{% endif %}{% endif %}{% if versions_json %} versions="{{ versions_json }}"{% endif %}{% if workflows_url %} workflows-url="{{ workflows_url }}"{% endif %}{% if accent %} accent="{{ accent }}"{% endif %}{% if logo %} logo="{{ logo }}"{% endif %}{% if logo_dark %} logo-dark="{{ logo_dark }}"{% endif %}{% if css_url %} css-url="{{ css_url }}"{% endif %}{% if oauth_client_id %} oauth-client-id="{{ oauth_client_id }}"{% endif %}{% if oauth_scopes %} oauth-scopes="{{ oauth_scopes }}"{% endif %}{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></api-docs>
     <script type="module" src="{{ bundle_url }}"{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></script>
   </body>
 </html>

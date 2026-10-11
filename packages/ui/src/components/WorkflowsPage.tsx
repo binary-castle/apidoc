@@ -234,7 +234,7 @@ const formValues = (workflow: ArazzoWorkflow, doc: ArazzoDocument) =>
   Object.fromEntries(Object.entries(defaultInputs(workflow, doc)).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)]))
 
 function Workbench({ workflow, doc, text }: { workflow: ArazzoWorkflow; doc: ArazzoDocument; text: string }) {
-  const { model, baseUrl, credentials, csrf } = useDocs()
+  const { model, baseUrl, csrf, freshCredentials } = useDocs()
   const [values, setValues] = useState(() => formValues(workflow, doc))
   const [run, setRun] = useState<WorkflowRun>()
   const [paused, setPaused] = useState<number>()
@@ -258,6 +258,9 @@ function Workbench({ workflow, doc, text }: { workflow: ArazzoWorkflow; doc: Ara
     abort.current?.abort()
     const controller = new AbortController()
     abort.current = controller
+    // Tokens refreshed once up front; a run is short compared with token lifetimes.
+    const credentials = await freshCredentials()
+    if (abort.current !== controller) return
     const result = await runWorkflow(doc, workflow.workflowId, {
       model,
       baseUrl,

@@ -39,11 +39,12 @@ examples/specs    Specs used for tests and the dev host:
                   orbit.yaml (hand-written 3.1) and its previous release orbit-2.3.0.yaml,
                   django-spectacular.yaml, django-yasg.json, fastapi.json
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
-examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs.
+examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs and a
+                  small OAuth 2 server (oauth_server.py) for trying sign-in.
 examples/express  Express 5 app with a hand-written openapi.yaml.
+examples/nestjs   NestJS 12 app documented by @nestjs/swagger.
 site              The live demo (GitHub Pages): the published bundle on the Orbit spec,
                   with an in-memory Orbit sandbox in a service worker.
-examples/nestjs   NestJS 12 app documented by @nestjs/swagger.
 ```
 
 ## Getting started
@@ -231,6 +232,8 @@ Done:
   timeline, per-step contract check), script export, and `apidoc run` for CI
 - `@binarycastle/apidoc-express` (Express 4/5, plain Node) and
   `@binarycastle/apidoc-nestjs` (NestJS 10–12 on Express or Fastify)
+- OAuth 2 / OpenID Connect sign-in: authorization code + PKCE (popup or same
+  tab), client credentials, password, implicit, discovery, automatic refresh
 - Branding: one `accent` colour (contrast-safe palettes for both themes),
   logos (or `info.x-logo`), a custom stylesheet over `--ad-*` tokens, favicons
 
@@ -274,6 +277,36 @@ lines `--ad-line`, `-border`, `-border-strong`; text `--ad-fg-strong`, `-fg`,
 The palette from `accent` is applied inline, so it wins over a stylesheet;
 leave `accent` out to set the accent tokens yourself. Load custom fonts on the
 page itself (e.g. a Google Fonts `<link>`): `@font-face` doesn't work inside a shadow root.
+
+## OAuth 2 and OpenID Connect sign-in
+
+For `oauth2` and `openIdConnect` security schemes, **Authorize** signs you in
+instead of asking you to paste a token:
+
+| Flow | How |
+|---|---|
+| Authorization code | With PKCE (S256), in a popup; "Continue in this tab" when pop-ups are blocked |
+| Client credentials | Client id + secret (HTTP Basic), for machine-to-machine APIs |
+| Password | Username + password, e.g. FastAPI's `OAuth2PasswordBearer` (the password is never stored) |
+| Implicit | Supported for older specs such as Swagger Petstore |
+| OpenID Connect | Endpoints and scopes from the discovery document |
+
+The redirect URI is the docs page itself (shown with a copy button in the panel):
+register it with your provider, and the page finishes sign-in when the
+provider sends the browser back. Tokens, refresh tokens and expiry are kept in
+sessionStorage. An expired token is refreshed automatically before a request
+when the provider issued a refresh token. Relative `tokenUrl`s (FastAPI's
+`token`) resolve against the selected server.
+
+Prefill the client id and scopes with `oauth-client-id` / `oauth-scopes`
+(`oauth` on `<ApiReference>`; `OAUTH_CLIENT_ID`/`OAUTH_SCOPES` in Django;
+`oauth_client_id=`/`oauth_scopes=` in FastAPI; `oauthClientId`/`oauthScopes`
+for Express and NestJS). The token endpoint must allow cross-origin requests
+from the docs unless both are on the same origin; most providers do for
+public (PKCE) clients.
+
+The FastAPI example ships a small OAuth server to try every flow: sign in as
+`demo` / `orbit-demo-password` with client `orbit-docs`, then call **Who am I**.
 
 ## Changelog and breaking changes
 

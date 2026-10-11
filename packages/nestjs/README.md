@@ -46,6 +46,7 @@ if you like.
 | `csrf` | `{ header, cookie?, token?: (req, res) => string }` for cookie-session APIs. |
 | `nonce` | `(req, res) => nonce` for a strict CSP. Defaults to `res.locals.cspNonce` (Express) or `reply.cspNonce` from @fastify/helmet. |
 | `accent`, `logo`, `logoDark`, `cssUrl`, `faviconUrl` | Branding: brand colour, logos, a stylesheet that can override any `--ad-*` token, favicon. |
+| `oauthClientId`, `oauthScopes` | Prefill OAuth sign-in in the playground. Register the docs URL as a redirect URI. |
 | `bundleUrl` | Load the UI from a CDN instead of serving it. |
 | `specUrl` | With `document` set to `null`: point at a spec served elsewhere. |
 

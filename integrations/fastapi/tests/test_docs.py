@@ -109,6 +109,13 @@ class MountTests(unittest.TestCase):
         self.assertEqual(attrs["css-url"], "brand.css")
         self.assertIn('<link rel="icon" href="data:image/svg+xml,%3Csvg%3E">', page)
 
+    def test_oauth_defaults(self):
+        app = make_app()
+        mount_apidoc(app, oauth_client_id="docs", oauth_scopes=["read", "write"])
+        attrs = element(TestClient(app).get("/reference").text)
+        self.assertEqual(attrs["oauth-client-id"], "docs")
+        self.assertEqual(attrs["oauth-scopes"], "read write")
+
     def test_no_branding_by_default(self):
         page = TestClient(self._app_with_docs()).get("/reference").text
         for name in ("accent", "logo", "logo-dark", "css-url"):

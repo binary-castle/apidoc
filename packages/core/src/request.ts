@@ -108,9 +108,29 @@ export function applyCsrf(request: HttpRequestSpec, csrf: CsrfConfig | undefined
 
 /** Credentials entered by the user for one security scheme. */
 export interface Credential {
+  /** Bearer token, API key, or the OAuth access token. */
   token?: string
   username?: string
   password?: string
+  /** How an OAuth token was obtained, so it can be shown and refreshed. */
+  oauth?: OAuthCredential
+}
+
+export interface OAuthCredential {
+  flow: 'authorizationCode' | 'clientCredentials' | 'password' | 'implicit'
+  clientId?: string
+  /** Kept in sessionStorage with the token; only for the client credentials flow. */
+  clientSecret?: string
+  scopes?: string[]
+  /** Password flow: who signed in (the password itself is never stored). */
+  username?: string
+  tokenUrl?: string
+  refreshUrl?: string
+  refreshToken?: string
+  /** Epoch milliseconds. */
+  expiresAt?: number
+  /** Scopes the server actually granted, when it says. */
+  grantedScope?: string
 }
 
 /** Add credentials for a security scheme to a request (returns a new spec). */

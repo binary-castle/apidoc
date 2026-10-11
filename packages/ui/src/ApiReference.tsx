@@ -10,6 +10,7 @@ import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
 import { WorkflowsPage } from './components/WorkflowsPage'
 import { accentStyle, resolveLogo, type Logo, type ResolvedLogo } from './lib/brand'
+import { isOAuthPopup, type OAuthConfig } from './lib/oauth'
 import { useHashRoute } from './lib/router'
 import type { ApiVersion } from './lib/versions'
 import { readStored, writeStored } from './lib/storage'
@@ -42,6 +43,11 @@ export interface ApiReferenceProps {
    * Defaults to the spec's `info.x-logo`.
    */
   logo?: Logo
+  /**
+   * Defaults for OAuth sign-in in the playground: the docs' client id, scopes
+   * to preselect, and a redirect URL (the docs page itself by default).
+   */
+  oauth?: OAuthConfig
   className?: string
 }
 
@@ -93,7 +99,21 @@ function Shell({ logo }: { logo?: ResolvedLogo }) {
   )
 }
 
-export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflows, accent, logo, className = '' }: ApiReferenceProps) {
+export function ApiReference(props: ApiReferenceProps) {
+  // This page was opened as the OAuth popup and has already passed the result on.
+  if (isOAuthPopup) return <OAuthPopupDone />
+  return <Reference {...props} />
+}
+
+function OAuthPopupDone() {
+  return (
+    <div className="apidoc flex h-full items-center justify-center p-6" data-theme={systemTheme()}>
+      <p className="text-sm text-muted">Signed in. You can close this window.</p>
+    </div>
+  )
+}
+
+function Reference({ spec, theme: forcedTheme, csrf, versions, workflows, accent, logo, oauth, className = '' }: ApiReferenceProps) {
   const source: SpecSource = typeof spec === 'string' ? { url: spec } : spec
   const sourceKey = 'url' in source ? source.url : typeof source.content === 'string' ? source.content : JSON.stringify(source.content).slice(0, 2000)
   const [state, setState] = useState<{ model?: ApiModel; error?: string; key?: string }>({})
@@ -128,7 +148,7 @@ export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflo
   return (
     <div className={`apidoc flex h-full min-h-0 flex-col ${className}`} data-theme={theme} style={brandStyle}>
       {ready && state.model ? (
-        <DocsProvider model={state.model} specUrl={specUrl} csrf={csrf} versions={versions} workflows={workflows} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
+        <DocsProvider model={state.model} specUrl={specUrl} csrf={csrf} versions={versions} workflows={workflows} oauth={oauth} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
           <Shell logo={resolvedLogo} />
         </DocsProvider>
       ) : ready && state.error ? (

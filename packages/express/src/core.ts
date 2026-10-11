@@ -48,6 +48,12 @@ export interface ApidocOptions<Req = unknown, Res = unknown> {
   /** Stylesheet applied inside the docs after the built-in theme; can override any `--ad-*` token. */
   cssUrl?: string
   faviconUrl?: string
+  /**
+   * OAuth sign-in defaults for the playground: the docs' client id and scopes
+   * to preselect. Register the docs URL as a redirect URI with the provider.
+   */
+  oauthClientId?: string
+  oauthScopes?: string[]
 }
 
 export interface ApidocRequest<Req = unknown, Res = unknown> {
@@ -135,6 +141,8 @@ export function createApidoc<Req = unknown, Res = unknown>(options: ApidocOption
         logoDark: options.logoDark,
         cssUrl: options.cssUrl,
         faviconUrl: options.faviconUrl,
+        oauthClientId: options.oauthClientId,
+        oauthScopes: options.oauthScopes,
       })
       return { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }, body: html }
     }

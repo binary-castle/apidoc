@@ -5,7 +5,7 @@ export { normalize, UNTAGGED } from './normalize'
 export { loadSpec, parseSpecText, toOpenAPI3, SpecError, type SpecSource, type LoadOptions } from './load'
 export { schemaTypes, isNullable, unwrapNullable, mergeAllOf, objectProperties, typeLabel, constraintHints, type PropertyInfo, type TypeLabel } from './schema'
 export { sampleFromSchema, exampleForMedia, type SampleMode } from './sample'
-export { buildRequest, applyAuth, applyCsrf, resolveServerUrl, joinUrl, type HttpRequestSpec, type RequestInput, type Credential, type CsrfConfig } from './request'
+export { buildRequest, applyAuth, applyCsrf, resolveServerUrl, joinUrl, type HttpRequestSpec, type RequestInput, type Credential, type CsrfConfig, type OAuthCredential } from './request'
 export { SNIPPET_TARGETS, generateSnippet, type SnippetTarget } from './snippets'
 export { buildSearchIndex, type SearchHit, type SearchIndex, type SearchKind } from './search'
 export { validateValue, deepEqual, type ContractIssue, type IssueKind, type IssueSeverity, type ValidationResult } from './validate'
@@ -37,3 +37,24 @@ export {
 } from './arazzo'
 export { exportWorkflow, type WorkflowExportFormat } from './workflow-export'
 export { accentTokens, contrastRatio, parseColor, toHex, type Rgb } from './color'
+export {
+  authorizationUrl,
+  clientCredentialsGrant,
+  discoverOpenIdConnect,
+  exchangeCode,
+  isExpired,
+  OAuthError,
+  oauthFlows,
+  parseCallback,
+  passwordGrant,
+  pkceChallenge,
+  randomString,
+  refreshGrant,
+  requestToken,
+  type AuthorizeOptions,
+  type CallbackResult,
+  type ClientAuth,
+  type OAuthFlow,
+  type OAuthFlowType,
+  type TokenSet,
+} from './oauth'

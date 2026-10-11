@@ -40,6 +40,9 @@ export interface ApidocHtmlOptions {
   /** Stylesheet applied inside the docs after the built-in theme; can override any `--ad-*` token. */
   cssUrl?: string
   faviconUrl?: string
+  /** OAuth sign-in defaults for the playground: the docs' client id and scopes to preselect. */
+  oauthClientId?: string
+  oauthScopes?: string[]
 }
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }
@@ -71,6 +74,8 @@ export function renderApidocHtml(options: ApidocHtmlOptions): string {
     ['logo', options.logo],
     ['logo-dark', options.logoDark],
     ['css-url', options.cssUrl],
+    ['oauth-client-id', options.oauthClientId],
+    ['oauth-scopes', options.oauthScopes?.length ? options.oauthScopes.join(' ') : undefined],
     // The element adds one <style> to the document head.
     ['nonce', styleNonce],
   ]

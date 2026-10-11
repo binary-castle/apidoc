@@ -61,11 +61,18 @@ class ApiDocViewTests(SimpleTestCase):
         self.assertEqual(attrs["logo"], "/logo.svg")
         self.assertNotIn("css-url", attrs)
 
+    @override_settings(APIDOC={"SCHEMA_URL": "/schema.json", "OAUTH_CLIENT_ID": "docs", "OAUTH_SCOPES": ["read", "write"]})
+    def test_oauth_defaults(self):
+        attrs = element(ApiDocView.as_view()(RequestFactory().get("/docs/")).render().content.decode())
+        self.assertEqual(attrs["oauth-client-id"], "docs")
+        self.assertEqual(attrs["oauth-scopes"], "read write")
+
     def test_no_branding_by_default(self):
         page = self.client.get("/docs/").content.decode()
         for name in ("accent", "logo", "logo-dark", "css-url"):
             self.assertNotIn(name, element(page))
         self.assertNotIn('rel="icon"', page)
+        self.assertNotIn("oauth-", page)
 
     def test_never_cached(self):
         response = self.client.get("/docs/")

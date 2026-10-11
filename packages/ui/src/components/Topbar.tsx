@@ -2,6 +2,7 @@ import type { SecuritySchemeModel } from '@apidoc/core'
 import { useEffect, useState } from 'react'
 import type { ResolvedLogo } from '../lib/brand'
 import { useDocs } from '../state'
+import { OAuthSignIn } from './OAuthSignIn'
 import { Popover } from './Popover'
 import { Icon, Kbd } from './ui'
 
@@ -70,9 +71,9 @@ function schemeHint(scheme: SecuritySchemeModel) {
     case 'apiKey':
       return `API key in ${scheme.in} · ${scheme.paramName}`
     case 'oauth2':
-      return 'OAuth 2 · paste an access token'
+      return 'OAuth 2'
     case 'openIdConnect':
-      return 'OpenID Connect · paste an access token'
+      return 'OpenID Connect'
     default:
       return 'Unsupported scheme'
   }
@@ -97,13 +98,15 @@ export function AuthPanel() {
                 <input className={inputClass} placeholder="username" autoComplete="off" value={credential.username ?? ''} onChange={e => setCredential(scheme.name, { ...credential, username: e.target.value })} />
                 <input className={inputClass} placeholder="password" type="password" autoComplete="off" value={credential.password ?? ''} onChange={e => setCredential(scheme.name, { ...credential, password: e.target.value })} />
               </div>
+            ) : scheme.kind === 'oauth2' || scheme.kind === 'openIdConnect' ? (
+              <OAuthSignIn scheme={scheme} />
             ) : scheme.kind !== 'unknown' ? (
               <input className={inputClass} placeholder={scheme.kind === 'apiKey' ? 'API key' : 'token'} type="password" autoComplete="off" value={credential.token ?? ''} onChange={e => setCredential(scheme.name, { ...credential, token: e.target.value })} />
             ) : null}
           </div>
         )
       })}
-      <p className="text-[11px] leading-4 text-subtle">Kept in this tab only (sessionStorage). Never sent anywhere except the API you call.</p>
+      <p className="text-[11px] leading-4 text-subtle">Kept in this tab only (sessionStorage). Sent only to the API you call and, when you sign in, its OAuth provider.</p>
     </div>
   )
 }

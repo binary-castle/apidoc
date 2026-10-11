@@ -77,6 +77,8 @@ class ApiDocView(TemplateView):
     logo_dark = None
     css_url = None
     favicon = None
+    oauth_client_id = None
+    oauth_scopes = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -106,5 +108,7 @@ class ApiDocView(TemplateView):
             logo_dark=asset_url(self.logo_dark or conf.get("LOGO_DARK")),
             css_url=asset_url(self.css_url or conf.get("CSS_URL")),
             favicon=asset_url(self.favicon or conf.get("FAVICON")),
+            oauth_client_id=self.oauth_client_id or conf.get("OAUTH_CLIENT_ID"),
+            oauth_scopes=" ".join(self.oauth_scopes if self.oauth_scopes is not None else conf.get("OAUTH_SCOPES")) or None,
         )
         return context

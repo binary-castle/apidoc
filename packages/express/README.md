@@ -51,6 +51,7 @@ app.use('/docs', apidoc({ spec: openapiDocument }))
 | `logo`, `logoDark` | Top-bar logo, and a variant for the dark theme. |
 | `cssUrl` | Stylesheet applied inside the docs after the theme; can override any `--ad-*` token. |
 | `faviconUrl` | Favicon for the docs page. |
+| `oauthClientId`, `oauthScopes` | Prefill OAuth sign-in in the playground. Register the docs URL as a redirect URI. |
 | `bundleUrl` | Load the UI from a CDN instead of serving it, e.g. `https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js`. |
 
 ### Session cookies and CSRF

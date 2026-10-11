@@ -55,6 +55,8 @@ APIDOC = {
     "LOGO": None,            # top-bar logo; "LOGO_DARK" for a dark-theme variant
     "CSS_URL": None,         # stylesheet that can override any --ad-* token
     "FAVICON": None,
+    "OAUTH_CLIENT_ID": None, # prefill OAuth sign-in; register the docs URL as a redirect URI
+    "OAUTH_SCOPES": [],      # scopes to preselect
 }
 ```
 

@@ -44,6 +44,7 @@ same place as `apidoc.js`; nothing is fetched from third-party CDNs.
 | `nonce` | CSP nonce for the one `<style>` the element adds to the document |
 | `accent` | Brand colour (any CSS colour); the accent palette for both themes is derived from it, keeping text readable |
 | `logo`, `logo-dark`, `logo-href` | Top-bar logo, a dark-theme variant, and where it links. Defaults to the spec's `info.x-logo` |
+| `oauth-client-id`, `oauth-scopes`, `oauth-redirect-url` | Prefill OAuth sign-in: the docs' client id, space-separated scopes, and a same-origin redirect URL (default: this page) |
 | `css-url` | Stylesheet applied inside the shadow root after the theme; override any `--ad-*` token or style `.apidoc` |
 
 Relative URLs in attributes resolve against the page, like any other HTML

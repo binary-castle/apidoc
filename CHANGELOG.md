@@ -15,8 +15,11 @@ First release.
 - Reads OpenAPI 3.1, 3.0 and Swagger 2.0, as JSON or YAML, from a URL or inline.
 - Reference pages with schema trees, examples and code snippets (cURL,
   JavaScript, Python, Go, HTTP); dark and light themes; mobile layout.
-- Playground with request history, auth (bearer, basic, API keys, and pasted
-  OAuth2/OpenID Connect tokens) and CSRF handling for cookie-session APIs.
+- Playground with request history, auth (bearer, basic, API keys) and CSRF
+  handling for cookie-session APIs.
+- OAuth 2 and OpenID Connect sign-in: authorization code with PKCE (popup, or
+  same tab when pop-ups are blocked), client credentials, password and
+  implicit flows, OIDC discovery, and automatic token refresh.
 - ⌘K search across endpoints, models and fields.
 - Contract check: every playground response is validated against the spec
   (status, content type, body schema, undocumented fields), with a suggested

@@ -206,6 +206,11 @@ describe('renderApidocHtml', () => {
     expect(renderApidocHtml({ specUrl: '/s', bundleUrl: '/b' })).not.toMatch(/accent=|logo=|css-url=|rel="icon"/)
   })
 
+  it('passes OAuth sign-in defaults', () => {
+    const html = renderApidocHtml({ specUrl: '/s', bundleUrl: '/b', oauthClientId: 'docs', oauthScopes: ['read', 'write'] })
+    expect(html).toContain('oauth-client-id="docs" oauth-scopes="read write"')
+  })
+
   it('ignores the CSRF cookie and token without a header', () => {
     const html = renderApidocHtml({ specUrl: '/s', bundleUrl: '/b', csrfCookie: 'c', csrfToken: 't' })
     expect(html).not.toContain('csrf')

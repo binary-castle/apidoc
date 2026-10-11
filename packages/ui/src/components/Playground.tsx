@@ -189,7 +189,7 @@ function ResponseView({ result, report, request }: { result: SendResult | SendFa
 }
 
 function Workbench({ operation, initialDraft, onSent }: { operation: OperationModel; initialDraft?: Draft; onSent: (entry: HistoryEntry) => void }) {
-  const { model, resolver, baseUrl, credentials, csrf } = useDocs()
+  const { model, resolver, baseUrl, credentials, csrf, freshCredentials } = useDocs()
   const [draft, setDraft] = useState<Draft>(() => initialDraft ?? defaultDraft(operation, resolver))
   const [tab, setTab] = useState<Tab>(() => (operation.requestBody ? 'body' : 'params'))
   const [result, setResult] = useState<SendResult | SendFailure>()
@@ -218,8 +218,11 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
     const controller = new AbortController()
     abort.current = controller
     setSending(true)
+    // Expired OAuth tokens are refreshed first, when the provider gave a refresh token.
+    const current = await freshCredentials()
+    const authorized = current === credentials ? request : draftToRequest(operation, draft, { baseUrl, model, resolver, credentials: current })
     // Read the CSRF cookie at send time: frameworks rotate it on login.
-    const outgoing = applyCsrf(request, csrf, { pageOrigin: window.location.origin, cookies: document.cookie })
+    const outgoing = applyCsrf(authorized, csrf, { pageOrigin: window.location.origin, cookies: document.cookie })
     const outcome = await sendRequest(outgoing, controller.signal)
     if (abort.current !== controller) return
     setSending(false)
