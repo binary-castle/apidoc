@@ -1,4 +1,4 @@
-import { generateSnippet, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
+import { applyCsrf, generateSnippet, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { bodyForMedia, defaultDraft, draftToRequest, type Draft } from '../lib/draft'
 import { readStored, writeStored } from '../lib/storage'
@@ -182,7 +182,7 @@ function ResponseView({ result, request }: { result: SendResult | SendFailure | 
 }
 
 function Workbench({ operation, initialDraft, onSent }: { operation: OperationModel; initialDraft?: Draft; onSent: (entry: HistoryEntry) => void }) {
-  const { model, resolver, baseUrl, credentials } = useDocs()
+  const { model, resolver, baseUrl, credentials, csrf } = useDocs()
   const [draft, setDraft] = useState<Draft>(() => initialDraft ?? defaultDraft(operation, resolver))
   const [tab, setTab] = useState<Tab>(() => (operation.requestBody ? 'body' : 'params'))
   const [result, setResult] = useState<SendResult | SendFailure>()
@@ -210,7 +210,9 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
     const controller = new AbortController()
     abort.current = controller
     setSending(true)
-    const outcome = await sendRequest(request, controller.signal)
+    // Read the CSRF cookie at send time: frameworks rotate it on login.
+    const outgoing = applyCsrf(request, csrf, { pageOrigin: window.location.origin, cookies: document.cookie })
+    const outcome = await sendRequest(outgoing, controller.signal)
     if (abort.current !== controller) return
     setSending(false)
     setResult(outcome)

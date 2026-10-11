@@ -1,4 +1,4 @@
-import { loadSpec, type ApiModel, type SpecSource } from '@apidoc/core'
+import { loadSpec, type ApiModel, type CsrfConfig, type SpecSource } from '@apidoc/core'
 import { useCallback, useEffect, useState } from 'react'
 import { CommandPalette } from './components/CommandPalette'
 import { IntroPage } from './components/IntroPage'
@@ -16,6 +16,11 @@ export interface ApiReferenceProps {
   spec: string | SpecSource
   /** Force a theme; by default follows the viewer's choice, then their OS. */
   theme?: Theme
+  /**
+   * Send a CSRF header on unsafe same-origin requests, e.g.
+   * { headerName: 'X-CSRFToken', cookieName: 'csrftoken' } for Django session auth.
+   */
+  csrf?: CsrfConfig
   className?: string
 }
 
@@ -65,7 +70,7 @@ function Shell() {
   )
 }
 
-export function ApiReference({ spec, theme: forcedTheme, className = '' }: ApiReferenceProps) {
+export function ApiReference({ spec, theme: forcedTheme, csrf, className = '' }: ApiReferenceProps) {
   const source: SpecSource = typeof spec === 'string' ? { url: spec } : spec
   const sourceKey = 'url' in source ? source.url : typeof source.content === 'string' ? source.content : JSON.stringify(source.content).slice(0, 2000)
   const [state, setState] = useState<{ model?: ApiModel; error?: string; key?: string }>({})
@@ -96,7 +101,7 @@ export function ApiReference({ spec, theme: forcedTheme, className = '' }: ApiRe
   return (
     <div className={`apidoc flex h-full min-h-0 flex-col ${className}`} data-theme={theme}>
       {ready && state.model ? (
-        <DocsProvider model={state.model} specUrl={'url' in source ? source.url : undefined} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
+        <DocsProvider model={state.model} specUrl={'url' in source ? source.url : undefined} csrf={csrf} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
           <Shell />
         </DocsProvider>
       ) : ready && state.error ? (

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_spectacular',
     'drf_yasg',
+    'apidoc_django',
     'billing',
 ]
 
@@ -155,7 +156,6 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Example DRF project used to develop and test apidoc.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-    "SERVERS": [{"url": "http://localhost:8000", "description": "Local Django"}],
 }
 
 SWAGGER_SETTINGS = {"DEFAULT_INFO": "orbit.swagger.info"}

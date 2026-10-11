@@ -33,7 +33,8 @@ describe('loadSpec', () => {
   it('reads drf-spectacular output', async () => {
     const model = await loadSpec({ content: readSpec('django-spectacular.yaml') })
     expect(model.sourceFormat).toBe('openapi3')
-    expect(model.servers[0]!.url).toBe('http://localhost:8000')
+    // No `servers` in the spec: requests go to the spec's own origin.
+    expect(model.servers).toEqual([{ url: '/', variables: {} }])
     const create = model.operations.find(o => o.method === 'post' && o.path === '/api/v1/customers/')!
     expect(create.summary).toBe('Create a customer')
     expect(create.requestBody?.content.map(c => c.mediaType)).toContain('application/json')

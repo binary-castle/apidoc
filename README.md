@@ -17,6 +17,9 @@ packages/ui       React UI (<ApiReference spec="…" />): reference, playground,
 packages/standalone
                   <api-docs> web component: one ES module (dist/apidoc.js) with React
                   bundled, rendered in Shadow DOM so host-page CSS can't leak in.
+integrations/django
+                  apidoc-django: ApiDocView serves the docs from your Django project,
+                  bundle included as static files, CSRF wired for session auth.
 examples/specs    Specs used for tests and the dev host:
                   orbit.yaml (hand-written 3.1), django-spectacular.yaml, django-yasg.json
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
@@ -40,14 +43,18 @@ Open `?spec=<url>` to load any spec, e.g.
 ### Django example (live "Try it")
 
 ```bash
+corepack pnpm build:django       # bundle -> integrations/django static files
 cd examples/django
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python manage.py migrate
+.venv/bin/python manage.py seed_demo_user   # staff login: demo / orbit-demo-password
 .venv/bin/python manage.py runserver 8000
 ```
 
-Then pick **Django · drf-spectacular (live)** in the dev host's switcher
-(bottom-right). Requests from the playground hit the real API.
+- http://localhost:8000/docs/ — docs served by Django through `apidoc-django`.
+  Log in at `/admin/` first and playground requests use your session (CSRF handled).
+- Or pick **Django · drf-spectacular (live)** in the UI dev host's switcher
+  (bottom-right) to load the same API cross-origin.
 
 Regenerate the fixtures after changing the example:
 
@@ -87,6 +94,17 @@ a thin package that serves one HTML page loading the bundle and pointing it at
 that framework's spec URL. Serving docs from the API's own domain also makes
 "Try it" work without CORS or a proxy.
 
+| Backend | Package | Docs |
+|---|---|---|
+| Django (DRF, drf-spectacular, drf-yasg, django-ninja) | `apidoc-django` | [integrations/django](integrations/django/README.md) |
+| Anything else | `<api-docs>` + the bundle | see "Embedding anywhere" above |
+
+Session-cookie APIs get CSRF support from the element's `csrf-header`,
+`csrf-cookie` and `csrf-token` attributes (Django, Rails and Laravel all fit).
+The token is only sent on unsafe, same-origin requests.
+
+Integration tests: `cd integrations/django && python runtests.py`.
+
 ## Status
 
 Done:
@@ -94,9 +112,10 @@ Done:
 - Reference page (A01), Playground with history (A02), ⌘K palette (A03)
 - Dark and light themes, mobile layout
 - `packages/standalone`: `<api-docs>` web component, Shadow DOM isolated
+- `apidoc-django`: docs served by Django, session auth + CSRF, CSP nonces
 
 Next:
-- Integrations: Django (`apidoc-django`), FastAPI, Express/NestJS
+- Integrations: FastAPI, Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
 - Contract check (validate live responses against the spec with Ajv)
 - Changelog / spec diff (A04), Workflows / Arazzo (A05)

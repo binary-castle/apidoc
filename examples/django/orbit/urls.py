@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
+from apidoc_django.views import ApiDocView
 from drf_spectacular.views import SpectacularAPIView
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions, routers
@@ -22,5 +23,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("docs/", ApiDocView.as_view(schema_url="schema", title="Orbit Payments API")),
     path("api/swagger.json", yasg_view.without_ui(cache_timeout=0), name="swagger-json"),
 ]

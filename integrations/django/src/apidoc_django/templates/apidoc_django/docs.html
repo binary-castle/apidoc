@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <style{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}>
+      html, body { margin: 0; height: 100%; background: {% if theme == "light" %}#fff{% else %}#0b0b0f{% endif %}; }
+      {% if not theme %}@media (prefers-color-scheme: light) { html, body { background: #fff; } }{% endif %}
+    </style>
+  </head>
+  <body>
+    <api-docs spec-url="{{ schema_url }}"{% if theme %} theme="{{ theme }}"{% endif %}{% if csrf_header %} csrf-header="{{ csrf_header }}" csrf-token="{{ csrf_token_value }}"{% if csrf_cookie %} csrf-cookie="{{ csrf_cookie }}"{% endif %}{% endif %}{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></api-docs>
+    <script type="module" src="{{ bundle_url }}"{% if csp_nonce %} nonce="{{ csp_nonce }}"{% endif %}></script>
+  </body>
+</html>

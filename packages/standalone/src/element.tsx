@@ -20,14 +20,14 @@ const HOST_CSS = `
  * so the CSS text is referenced in exactly one place in the bundle.
  */
 let sheets: CSSStyleSheet[] | undefined
-function sharedSheets(): CSSStyleSheet[] {
+function sharedSheets(nonce: string): CSSStyleSheet[] {
   if (!sheets) {
     const host = new CSSStyleSheet()
     host.replaceSync(HOST_CSS)
     const theme = new CSSStyleSheet()
     theme.replaceSync(themeCss)
     sheets = [host, theme]
-    installDocumentGlobals(theme)
+    installDocumentGlobals(theme, nonce)
   }
   return sheets
 }
@@ -44,8 +44,10 @@ function propertyRules(rules: CSSRuleList): string[] {
  * document: @font-face (fonts) and @property (Tailwind registers its utility
  * variables with it; without them shadows/rings/transforms silently break).
  */
-function installDocumentGlobals(theme: CSSStyleSheet) {
+function installDocumentGlobals(theme: CSSStyleSheet, nonce: string) {
   const style = document.createElement('style')
+  // Under a strict Content-Security-Policy the injected <style> needs the page's nonce.
+  if (nonce) style.nonce = nonce
   style.dataset.apidoc = 'globals'
   style.textContent = propertyRules(theme.cssRules).join('\n')
   document.head.append(style)
@@ -63,11 +65,14 @@ function inlineSpec(element: HTMLElement): string | undefined {
 /**
  * <api-docs spec-url="/openapi.json" theme="dark"></api-docs>
  *
- * Attributes: `spec-url`, `theme` ("dark" | "light"; omit to follow the viewer).
+ * Attributes: `spec-url`, `theme` ("dark" | "light"; omit to follow the viewer),
+ * and `csrf-header` + `csrf-cookie` / `csrf-token` for session-authenticated
+ * same-origin APIs (the Django integration sets these). A `nonce` attribute is
+ * applied to the one <style> added to the document, for strict CSP setups.
  * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
  */
 export class ApiDocsElement extends HTMLElement {
-  static observedAttributes = ['spec-url', 'theme']
+  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token']
 
   #root?: Root
   #spec?: SpecInput
@@ -84,7 +89,7 @@ export class ApiDocsElement extends HTMLElement {
   connectedCallback() {
     if (this.#root) return
     const shadow = this.shadowRoot ?? this.attachShadow({ mode: 'open' })
-    shadow.adoptedStyleSheets = sharedSheets()
+    shadow.adoptedStyleSheets = sharedSheets(this.nonce ?? '')
     const mount = document.createElement('div')
     mount.className = 'apidoc-mount'
     shadow.replaceChildren(mount)
@@ -115,6 +120,10 @@ export class ApiDocsElement extends HTMLElement {
       this.#root.render(<p style={{ font: '14px system-ui', padding: 24, color: '#b02a2a' }}>&lt;api-docs&gt; needs a <code>spec-url</code> attribute, a <code>spec</code> property, or an inline &lt;script type="application/json"&gt;.</p>)
       return
     }
-    this.#root.render(<ApiReference spec={spec} theme={theme} />)
+    const csrfHeader = this.getAttribute('csrf-header')
+    const csrf = csrfHeader
+      ? { headerName: csrfHeader, cookieName: this.getAttribute('csrf-cookie') ?? undefined, token: this.getAttribute('csrf-token') ?? undefined }
+      : undefined
+    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} />)
   }
 }

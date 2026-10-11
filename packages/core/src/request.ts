@@ -64,6 +64,48 @@ export function buildRequest(operation: OperationModel, input: RequestInput): Ht
   }
 }
 
+/**
+ * Cookie-to-header CSRF protection (Django, Rails, Laravel, Angular-style
+ * XSRF). The live cookie wins over the embedded token because frameworks
+ * rotate the token on login.
+ */
+export interface CsrfConfig {
+  /** Header to send, e.g. "X-CSRFToken" (Django) or "X-XSRF-TOKEN" (Laravel). */
+  headerName: string
+  /** Cookie to read the current token from, e.g. "csrftoken". */
+  cookieName?: string
+  /** Token embedded by the server, used when the cookie is missing or HttpOnly. */
+  token?: string
+}
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE'])
+
+function readCookie(cookies: string, name: string): string | undefined {
+  for (const part of cookies.split(';')) {
+    const index = part.indexOf('=')
+    if (index > -1 && part.slice(0, index).trim() === name) return decodeURIComponent(part.slice(index + 1).trim())
+  }
+  return undefined
+}
+
+/**
+ * Add the CSRF header to unsafe, same-origin requests. Cross-origin requests
+ * never get it, so the token can't leak to other hosts.
+ */
+export function applyCsrf(request: HttpRequestSpec, csrf: CsrfConfig | undefined, context: { pageOrigin: string; cookies: string }): HttpRequestSpec {
+  if (!csrf || SAFE_METHODS.has(request.method.toUpperCase())) return request
+  let origin: string
+  try {
+    origin = new URL(request.url, context.pageOrigin).origin
+  } catch {
+    return request
+  }
+  if (origin !== context.pageOrigin) return request
+  if (request.headers.some(([name]) => name.toLowerCase() === csrf.headerName.toLowerCase())) return request
+  const token = (csrf.cookieName && readCookie(context.cookies, csrf.cookieName)) || csrf.token
+  return token ? { ...request, headers: [...request.headers, [csrf.headerName, token]] } : request
+}
+
 /** Credentials entered by the user for one security scheme. */
 export interface Credential {
   token?: string

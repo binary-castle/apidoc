@@ -4,6 +4,7 @@ import {
   Resolver,
   type ApiModel,
   type Credential,
+  type CsrfConfig,
   type OperationModel,
   type SearchIndex,
 } from '@apidoc/core'
@@ -19,6 +20,8 @@ export interface DocsState {
   search: SearchIndex
   /** Where the spec was loaded from; relative server URLs resolve against it. */
   specUrl?: string
+  /** CSRF header for same-origin playground requests (e.g. Django session auth). */
+  csrf?: CsrfConfig
   route: Route
   navigate: (route: Route) => void
   operationById: (id: string) => OperationModel | undefined
@@ -59,6 +62,7 @@ function absolutize(url: string, specUrl?: string) {
 interface ProviderProps {
   model: ApiModel
   specUrl?: string
+  csrf?: CsrfConfig
   route: Route
   navigate: (route: Route) => void
   theme: Theme
@@ -66,7 +70,7 @@ interface ProviderProps {
   children: ReactNode
 }
 
-export function DocsProvider({ model, specUrl, route, navigate, theme, setTheme, children }: ProviderProps) {
+export function DocsProvider({ model, specUrl, csrf, route, navigate, theme, setTheme, children }: ProviderProps) {
   const storageKey = model.info.title
   const resolver = useMemo(() => new Resolver(model.document), [model])
   const search = useMemo(() => buildSearchIndex(model), [model])
@@ -113,6 +117,7 @@ export function DocsProvider({ model, specUrl, route, navigate, theme, setTheme,
     resolver,
     search,
     specUrl,
+    csrf,
     route,
     navigate,
     operationById: id => operations.get(id),
@@ -127,7 +132,7 @@ export function DocsProvider({ model, specUrl, route, navigate, theme, setTheme,
     setCredential,
     paletteOpen,
     setPaletteOpen,
-  }), [model, resolver, search, specUrl, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
+  }), [model, resolver, search, specUrl, csrf, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
 
   return <DocsContext.Provider value={value}>{children}</DocsContext.Provider>
 }

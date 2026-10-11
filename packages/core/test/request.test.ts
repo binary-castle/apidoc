@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyAuth, buildRequest, buildSearchIndex, generateSnippet, loadSpec, resolveServerUrl, Resolver, sampleFromSchema } from '../src'
+import { applyAuth, applyCsrf, buildRequest, buildSearchIndex, generateSnippet, loadSpec, resolveServerUrl, Resolver, sampleFromSchema } from '../src'
 import { readSpec } from './fixtures'
 
 const orbit = () => loadSpec({ content: readSpec('orbit.yaml') })
@@ -67,6 +67,28 @@ describe('requests and snippets', () => {
     expect(generateSnippet('javascript', request)).toContain('body: JSON.stringify(')
     expect(generateSnippet('go', request)).toContain('http.NewRequest("POST"')
     expect(generateSnippet('http', request)).toMatch(/^POST \/v2\/customers HTTP\/1.1\nHost: api.orbit.dev/)
+  })
+})
+
+describe('csrf', () => {
+  const csrf = { headerName: 'X-CSRFToken', cookieName: 'csrftoken', token: 'embedded' }
+  const page = { pageOrigin: 'http://localhost:8000', cookies: 'sessionid=abc; csrftoken=fromcookie' }
+  const post = { method: 'POST', url: '/api/v1/customers/', headers: [] as [string, string][] }
+
+  it('adds the cookie token to unsafe same-origin requests', () => {
+    expect(applyCsrf(post, csrf, page).headers).toEqual([['X-CSRFToken', 'fromcookie']])
+    expect(applyCsrf({ ...post, url: 'http://localhost:8000/x' }, csrf, page).headers).toHaveLength(1)
+  })
+
+  it('falls back to the embedded token when the cookie is missing or HttpOnly', () => {
+    expect(applyCsrf(post, csrf, { ...page, cookies: 'sessionid=abc' }).headers).toEqual([['X-CSRFToken', 'embedded']])
+  })
+
+  it('never sends the token cross-origin or on safe methods, and respects a manual header', () => {
+    expect(applyCsrf({ ...post, url: 'https://evil.example/steal' }, csrf, page).headers).toEqual([])
+    expect(applyCsrf({ ...post, method: 'GET' }, csrf, page).headers).toEqual([])
+    expect(applyCsrf({ ...post, headers: [['x-csrftoken', 'mine']] }, csrf, page).headers).toEqual([['x-csrftoken', 'mine']])
+    expect(applyCsrf(post, undefined, page)).toBe(post)
   })
 })
 
