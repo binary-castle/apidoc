@@ -45,6 +45,7 @@ mount_apidoc(
     csrf_cookie=None,   # double-submit CSRF, e.g. "fastapi-csrf-token"
     versions=None,      # older releases for the changelog, newest first:
                         # [{"version": "1.2.0", "url": "/specs/1.2.0.json", "date": "2026-09-18"}]
+    workflows_url=None, # Arazzo document with runnable multi-step workflows
 )
 ```
 

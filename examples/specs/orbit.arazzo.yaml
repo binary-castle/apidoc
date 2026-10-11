@@ -1,0 +1,54 @@
+arazzo: 1.0.1
+info:
+  title: Orbit payment flows
+  version: 2.4.0
+sourceDescriptions:
+  - name: orbit
+    url: ./orbit.yaml
+    type: openapi
+workflows:
+  - workflowId: onboardAndCharge
+    summary: Onboard a customer and charge
+    description: Create a customer, then confirm a £49.00 payment for them.
+    inputs:
+      type: object
+      properties:
+        email: { type: string, default: ada@lovelace.dev }
+        amount: { type: integer, default: 4900 }
+    steps:
+      - stepId: createCustomer
+        operationId: createCustomer
+        parameters:
+          - name: Idempotency-Key
+            in: header
+            value: onboard-{$inputs.email}
+        requestBody:
+          payload:
+            email: $inputs.email
+            name: Ada Lovelace
+        successCriteria:
+          - condition: $statusCode == 201
+        outputs:
+          customerId: $response.body#/id
+      - stepId: confirmPayment
+        operationId: $sourceDescriptions.orbit.createPaymentIntent
+        requestBody:
+          payload:
+            amount: $inputs.amount
+            currency: gbp
+            customer: $steps.createCustomer.outputs.customerId
+            confirm: true
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/status == 'succeeded'
+        onFailure:
+          - name: retryWhileProcessing
+            type: retry
+            retryAfter: 0
+            retryLimit: 2
+            criteria:
+              - condition: $response.body#/status == 'processing'
+        outputs:
+          paymentId: $response.body#/id
+    outputs:
+      paymentId: $steps.confirmPayment.outputs.paymentId

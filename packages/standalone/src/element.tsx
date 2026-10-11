@@ -71,10 +71,11 @@ function inlineSpec(element: HTMLElement): string | undefined {
  * applied to the one <style> added to the document, for strict CSP setups.
  * `versions` takes JSON: older releases, newest first, e.g.
  * '[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'.
+ * `workflows-url` points at an Arazzo 1.x document with runnable multi-step workflows.
  * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
  */
 export class ApiDocsElement extends HTMLElement {
-  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions']
+  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions', 'workflows-url']
 
   #root?: Root
   #spec?: SpecInput
@@ -126,7 +127,7 @@ export class ApiDocsElement extends HTMLElement {
     const csrf = csrfHeader
       ? { headerName: csrfHeader, cookieName: this.getAttribute('csrf-cookie') ?? undefined, token: this.getAttribute('csrf-token') ?? undefined }
       : undefined
-    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} versions={this.#versions()} />)
+    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} versions={this.#versions()} workflows={this.getAttribute('workflows-url') ?? undefined} />)
   }
 
   #versionsCache?: { raw: string; value: ApiVersion[] | undefined }

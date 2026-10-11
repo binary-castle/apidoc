@@ -1,0 +1,112 @@
+arazzo: 1.0.1
+info:
+  title: Orbit billing flows
+  version: 1.0.0
+  summary: Multi-step flows for the Django example API (examples/django).
+sourceDescriptions:
+  - name: orbit
+    url: ./django-spectacular.yaml
+    type: openapi
+workflows:
+  - workflowId: onboardAndCharge
+    summary: Onboard a customer and charge them
+    description: Create a customer, charge them, then refund part of the payment. Each step uses ids returned by the previous one.
+    inputs:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          default: ada@example.com
+          description: Emails are unique; use a new one for each run.
+        name:
+          type: string
+          default: Ada Lovelace
+        amount:
+          type: integer
+          default: 4900
+          description: Amount in pence (4900 = £49.00).
+    steps:
+      - stepId: createCustomer
+        description: Create the customer
+        operationId: v1_customers_create
+        requestBody:
+          contentType: application/json
+          payload:
+            email: $inputs.email
+            name: $inputs.name
+            country: GB
+        successCriteria:
+          - condition: $statusCode == 201
+        outputs:
+          customerId: $response.body#/id
+      - stepId: chargeCustomer
+        description: Charge the new customer
+        operationId: v1_payments_create
+        requestBody:
+          contentType: application/json
+          payload:
+            customer: $steps.createCustomer.outputs.customerId
+            amount: $inputs.amount
+            currency: gbp
+            description: Welcome charge for {$inputs.email}
+        successCriteria:
+          - condition: $statusCode == 201
+          - condition: $response.body#/status == 'succeeded'
+        outputs:
+          paymentId: $response.body#/id
+      - stepId: refundPart
+        description: Refund £24.50 of it
+        operationId: v1_payments_refund_create
+        parameters:
+          - name: id
+            in: path
+            value: $steps.chargeCustomer.outputs.paymentId
+        requestBody:
+          contentType: application/json
+          payload:
+            amount: 2450
+            reason: requested_by_customer
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/status == 'refunded'
+        outputs:
+          status: $response.body#/status
+    outputs:
+      customerId: $steps.createCustomer.outputs.customerId
+      paymentId: $steps.chargeCustomer.outputs.paymentId
+      refundStatus: $steps.refundPart.outputs.status
+
+  - workflowId: archiveCustomer
+    summary: Create and archive a customer
+    description: Archiving replaces the deprecated delete endpoint.
+    inputs:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          default: grace@example.com
+    steps:
+      - stepId: createCustomer
+        operationId: v1_customers_create
+        requestBody:
+          contentType: application/json
+          payload:
+            email: $inputs.email
+            name: Grace Hopper
+        successCriteria:
+          - condition: $statusCode == 201
+        outputs:
+          customerId: $response.body#/id
+      - stepId: archive
+        operationId: v1_customers_archive_create
+        parameters:
+          - name: id
+            in: path
+            value: $steps.createCustomer.outputs.customerId
+        successCriteria:
+          - condition: $statusCode == 200 && $response.body#/archived == true
+    outputs:
+      customerId: $steps.createCustomer.outputs.customerId

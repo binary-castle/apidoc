@@ -8,6 +8,7 @@ import { Playground } from './components/Playground'
 import { SchemaPage } from './components/SchemaPage'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
+import { WorkflowsPage } from './components/WorkflowsPage'
 import { useHashRoute } from './lib/router'
 import type { ApiVersion } from './lib/versions'
 import { readStored, writeStored } from './lib/storage'
@@ -28,6 +29,8 @@ export interface ApiReferenceProps {
    * Enables the changelog and NEW/CHANGED badges.
    */
   versions?: ApiVersion[]
+  /** An Arazzo 1.x document (URL or content) describing multi-step workflows for this API. */
+  workflows?: string | SpecSource
   className?: string
 }
 
@@ -43,6 +46,7 @@ function Main() {
   const { route, model, operationById } = useDocs()
   if (route.view === 'playground') return <Playground operationId={route.id} />
   if (route.view === 'changelog') return <ChangelogPage from={route.from} />
+  if (route.view === 'workflow') return <WorkflowsPage id={route.id} />
   if (route.view === 'operation') {
     const operation = operationById(route.id)
     if (operation) return <OperationPage key={operation.id} operation={operation} />
@@ -78,7 +82,7 @@ function Shell() {
   )
 }
 
-export function ApiReference({ spec, theme: forcedTheme, csrf, versions, className = '' }: ApiReferenceProps) {
+export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflows, className = '' }: ApiReferenceProps) {
   const source: SpecSource = typeof spec === 'string' ? { url: spec } : spec
   const sourceKey = 'url' in source ? source.url : typeof source.content === 'string' ? source.content : JSON.stringify(source.content).slice(0, 2000)
   const [state, setState] = useState<{ model?: ApiModel; error?: string; key?: string }>({})
@@ -109,7 +113,7 @@ export function ApiReference({ spec, theme: forcedTheme, csrf, versions, classNa
   return (
     <div className={`apidoc flex h-full min-h-0 flex-col ${className}`} data-theme={theme}>
       {ready && state.model ? (
-        <DocsProvider model={state.model} specUrl={'url' in source ? source.url : undefined} csrf={csrf} versions={versions} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
+        <DocsProvider model={state.model} specUrl={'url' in source ? source.url : undefined} csrf={csrf} versions={versions} workflows={workflows} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
           <Shell />
         </DocsProvider>
       ) : ready && state.error ? (

@@ -2,7 +2,8 @@
 
 OpenAPI documentation you can work in: an API reference, a request playground
 that checks every live response against the spec, ⌘K search over endpoints,
-schemas and fields, and a changelog with breaking-change detection. One ES
+schemas and fields, a changelog with breaking-change detection, and runnable
+multi-step workflows (Arazzo). One ES
 module, no framework required.
 
 Works with any OpenAPI 3.0/3.1 or Swagger 2.0 document: drf-spectacular,
@@ -36,6 +37,7 @@ same place as `apidoc.js`; nothing is fetched from third-party CDNs.
 | `spec-url` | URL of the OpenAPI/Swagger document (JSON or YAML) |
 | `theme` | `dark` or `light`; omit to follow the viewer's choice, then their OS |
 | `versions` | JSON list of older releases, newest first, for the changelog: `[{"version":"1.2.0","url":"/openapi-1.2.0.yaml","date":"2026-09-18"}]` |
+| `workflows-url` | An [Arazzo 1.0](https://spec.openapis.org/arazzo/latest.html) document; its workflows become runnable pages |
 | `csrf-header`, `csrf-cookie`, `csrf-token` | Send a CSRF header on unsafe same-origin requests (cookie-session APIs) |
 | `nonce` | CSP nonce for the one `<style>` the element adds to the document |
 

@@ -17,5 +17,7 @@ urlpatterns = [
     ),
     path("docs-unresolvable/", ApiDocView.as_view(schema_url="no-such-url-name")),
     path("docs-versions/", ApiDocView.as_view(schema_url="schema", versions=[{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}])),
+    path("workflows.arazzo.yaml", schema, name="workflows"),
+    path("docs-workflows/", ApiDocView.as_view(schema_url="schema", workflows_url="workflows")),
     path("docs-from-settings/", include("apidoc_django.urls")),
 ]

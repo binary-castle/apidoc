@@ -47,6 +47,7 @@ APIDOC = {
     "BUNDLE_URL": None,      # e.g. "https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js"
     "CSRF": True,            # pass the CSRF token to the playground
     "VERSIONS": [],          # older releases for the changelog, newest first
+    "WORKFLOWS_URL": None,   # Arazzo document with runnable workflows (URL name or path)
 }
 ```
 

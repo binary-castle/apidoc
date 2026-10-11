@@ -4,7 +4,7 @@ import { useDocs } from '../state'
 import { Icon, MethodText, Tag } from './ui'
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { model, route, navigate, previousDiff, operationChange } = useDocs()
+  const { model, route, navigate, previousDiff, operationChange, arazzo } = useDocs()
   const storageKey = `${model.info.title}:collapsed`
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => readStored(storageKey, {}))
   const activeRef = useRef<HTMLButtonElement>(null)
@@ -52,6 +52,32 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           )}
         </button>
       </div>
+
+      {arazzo.status === 'ready' && (
+        <div className="flex flex-col gap-px">
+          <button type="button" onClick={() => toggle('__workflows')} className="flex items-center gap-1.5 px-2 pb-1 text-left">
+            <Icon name={collapsed.__workflows ? 'chevronRight' : 'chevronDown'} size={11} strokeWidth={2.4} className="text-subtle" />
+            <span className="flex-1 text-[11px] font-semibold uppercase tracking-[0.04em] text-subtle">Workflows</span>
+            <span className="font-mono text-[10px] text-faint">{arazzo.value.doc.workflows.length}</span>
+          </button>
+          {!collapsed.__workflows &&
+            arazzo.value.doc.workflows.map(workflow => {
+              const active = route.view === 'workflow' && (route.id ?? arazzo.value.doc.workflows[0]!.workflowId) === workflow.workflowId
+              return (
+                <button
+                  key={workflow.workflowId}
+                  type="button"
+                  onClick={() => go({ view: 'workflow', id: workflow.workflowId })}
+                  className={`flex items-center gap-2 rounded-[7px] border px-2 py-1.5 text-left ${active ? 'border-selected-line bg-selected' : 'border-transparent hover:bg-hover'}`}
+                >
+                  <span className="flex w-10 shrink-0 justify-center"><Icon name="play" size={10} filled className="text-accent-text" /></span>
+                  <span className={`flex-1 truncate text-[13px] ${active ? 'font-medium text-fg-strong' : 'text-fg-2'}`}>{workflow.summary ?? workflow.workflowId}</span>
+                  <span className="font-mono text-[10px] text-faint" title={`${workflow.steps.length} steps`}>{workflow.steps.length}</span>
+                </button>
+              )
+            })}
+        </div>
+      )}
 
       {model.tags.map(tag => {
         const isCollapsed = collapsed[tag.name] ?? false

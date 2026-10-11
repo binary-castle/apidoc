@@ -44,11 +44,13 @@ const spec = params.get('spec') ?? '/specs/orbit.yaml'
 const theme = params.get('theme')
 // The Orbit example ships its previous release for the changelog.
 const versions = spec.endsWith('/orbit.yaml') ? [{ version: '2.3.0', url: '/specs/orbit-2.3.0.yaml', date: '2026-09-18' }] : undefined
+// Example Arazzo workflows for the Orbit spec and the Django example (fixture or live).
+const workflows = spec.endsWith('/orbit.yaml') ? '/specs/orbit.arazzo.yaml' : /django-spectacular|:8000\/api\/schema/.test(spec) ? `${window.location.origin}/specs/django.arazzo.yaml` : undefined
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <div style={{ height: '100vh' }}>
-      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} versions={versions} />
+      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} versions={versions} workflows={workflows} />
     </div>
     <SpecSwitcher current={spec} />
   </StrictMode>,

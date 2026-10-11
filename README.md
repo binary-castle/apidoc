@@ -134,7 +134,7 @@ Integration tests: `python runtests.py` in `integrations/django` and `integratio
 | Package | Registry | What it is |
 |---|---|---|
 | [`@binarycastle/apidoc`](packages/standalone/README.md) | npm / jsDelivr | The `<api-docs>` web component bundle |
-| [`@binarycastle/apidoc-cli`](packages/cli/README.md) | npm | `apidoc diff … --fail-on breaking` for CI |
+| [`@binarycastle/apidoc-cli`](packages/cli/README.md) | npm | `apidoc diff` (breaking changes) and `apidoc run` (Arazzo smoke tests) for CI |
 | [`apidoc-django`](integrations/django/README.md) | PyPI | Docs served by Django, bundle included |
 | [`apidoc-fastapi`](integrations/fastapi/README.md) | PyPI | Docs served by FastAPI, bundle included |
 
@@ -182,6 +182,8 @@ Done:
   YAML patch for fields the spec is missing
 - Changelog: release history, any-two-versions diff with breaking-change
   rules, NEW/CHANGED badges, Markdown upgrade notes, and `apidoc diff` for CI
+- Workflows: Arazzo 1.0 runner in the docs (run all / step through, live
+  timeline, per-step contract check), script export, and `apidoc run` for CI
 
 ## Changelog and breaking changes
 
@@ -215,6 +217,41 @@ apidoc diff old.json https://api.example.com/openapi.json --format markdown
 Exit codes: 0 ok, 1 when `--fail-on` is reached, 2 for usage or load errors.
 Build it with `corepack pnpm --filter @binarycastle/apidoc-cli build` (→ `packages/cli/dist/apidoc.mjs`).
 
+## Workflows (Arazzo)
+
+Multi-step flows, such as "create a customer, then charge them, then refund",
+are described with [Arazzo 1.0](https://spec.openapis.org/arazzo/latest.html)
+and can be run from the docs:
+
+```html
+<api-docs spec-url="/openapi.yaml" workflows-url="/workflows.arazzo.yaml"></api-docs>
+```
+
+(`workflows` on `<ApiReference>`, `workflows_url=` / `APIDOC["WORKFLOWS_URL"]` in
+Django, `workflows_url=` in FastAPI.) Each workflow gets a page with an inputs
+form, **Run all** or **Step through**, and a live timeline: what each step
+uses from earlier steps, its outputs, its success criteria and whether the
+response matches the spec. Runs use the same credentials and CSRF handling as
+the playground. Any workflow exports to a TypeScript, Python or REST Client
+`.http` script.
+
+Supported: runtime expressions (`$inputs`, `$steps.<id>.outputs`,
+`$response.body#/pointer`, `$response.header`, `$statusCode`, `{$…}` inside
+strings), simple and regex success criteria, outputs, `onSuccess`/`onFailure`
+actions (`end`, `goto`, `retry` with `retryAfter`/`retryLimit`), nested
+workflows and request body `replacements`. Not yet: JSONPath/XPath criteria
+and `dependsOn`.
+
+The same runner is a smoke test in CI:
+
+```bash
+apidoc run workflows.arazzo.yaml --server https://staging.example.com \
+  --input email=ci@example.com --header "Authorization: Bearer $TOKEN"
+```
+
+It exits 1 when any step fails. Without `--spec` it uses the document's first
+`sourceDescription`.
+
 ## Contract check
 
 After each playground request apidoc compares the live response with the spec:
@@ -235,5 +272,4 @@ under a strict Content-Security-Policy.
 Next:
 - Integrations: Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
-- Workflows / Arazzo (A05)
 - Optional proxy for cross-origin "Try it" and DNS/TLS timing

@@ -10,7 +10,7 @@ function serveSpecs(req: IncomingMessage, res: ServerResponse, next: () => void)
   res.setHeader('Access-Control-Allow-Origin', '*')
   if (!name) {
     res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify(readdirSync(specsDir).filter(f => /\.(json|ya?ml)$/.test(f))))
+    res.end(JSON.stringify(readdirSync(specsDir).filter(f => /\.(json|ya?ml)$/.test(f) && !f.includes('.arazzo.'))))
     return
   }
   const file = join(specsDir, name)

@@ -11,3 +11,28 @@ export { buildSearchIndex, type SearchHit, type SearchIndex, type SearchKind } f
 export { validateValue, deepEqual, type ContractIssue, type IssueKind, type IssueSeverity, type ValidationResult } from './validate'
 export { checkResponse, inferSchema, suggestSpecPatch, type ContractReport, type ObservedResponse } from './contract'
 export { diffSpecs, diffToMarkdown, fragmentToYaml, schemaSummary, type ChangeLevel, type OperationChangeStatus, type OperationDiff, type SpecChange, type SpecDiff } from './diff'
+export {
+  parseArazzo,
+  runWorkflow,
+  evaluateExpression,
+  resolveValue,
+  isExpression,
+  parseCondition,
+  checkCriterion,
+  defaultInputs,
+  findOperation,
+  WorkflowError,
+  type ArazzoDocument,
+  type ArazzoWorkflow,
+  type ArazzoStep,
+  type ArazzoCriterion,
+  type ArazzoAction,
+  type ExpressionContext,
+  type StepResponse,
+  type StepRun,
+  type StepStatus,
+  type WorkflowRun,
+  type RunOptions,
+  type CriterionResult,
+} from './arazzo'
+export { exportWorkflow, type WorkflowExportFormat } from './workflow-export'

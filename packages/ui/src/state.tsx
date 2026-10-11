@@ -9,11 +9,13 @@ import {
   type OperationModel,
   type SearchIndex,
   type SpecDiff,
+  type SpecSource,
 } from '@apidoc/core'
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { readStored, writeStored } from './lib/storage'
 import type { Route } from './lib/router'
-import { useOperationChanges, usePreviousDiff, type ApiVersion } from './lib/versions'
+import { useOperationChanges, usePreviousDiff, type ApiVersion, type LoadState } from './lib/versions'
+import { useArazzo, type LoadedArazzo } from './lib/workflows'
 
 export type Theme = 'dark' | 'light'
 
@@ -30,6 +32,8 @@ export interface DocsState {
   /** Previous release → current, once loaded. */
   previousDiff?: SpecDiff
   operationChange: (id: string) => OperationChangeStatus | undefined
+  /** Arazzo workflows for this API, if configured. */
+  arazzo: LoadState<LoadedArazzo>
   route: Route
   navigate: (route: Route) => void
   operationById: (id: string) => OperationModel | undefined
@@ -73,6 +77,7 @@ interface ProviderProps {
   specUrl?: string
   csrf?: CsrfConfig
   versions?: ApiVersion[]
+  workflows?: string | SpecSource
   route: Route
   navigate: (route: Route) => void
   theme: Theme
@@ -80,7 +85,7 @@ interface ProviderProps {
   children: ReactNode
 }
 
-export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, route, navigate, theme, setTheme, children }: ProviderProps) {
+export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, workflows, route, navigate, theme, setTheme, children }: ProviderProps) {
   const storageKey = model.info.title
   const resolver = useMemo(() => new Resolver(model.document), [model])
   const search = useMemo(() => buildSearchIndex(model), [model])
@@ -99,6 +104,7 @@ export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, rou
   const [paletteOpen, setPaletteOpen] = useState(false)
   const previousDiff = usePreviousDiff(model, versions, specUrl)
   const changes = useOperationChanges(previousDiff)
+  const arazzo = useArazzo(workflows, specUrl)
 
   const setServerIndex = useCallback((index: number) => {
     setServerIndexState(index)
@@ -133,6 +139,7 @@ export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, rou
     versions,
     previousDiff,
     operationChange: id => changes.get(id),
+    arazzo,
     route,
     navigate,
     operationById: id => operations.get(id),
@@ -147,7 +154,7 @@ export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, rou
     setCredential,
     paletteOpen,
     setPaletteOpen,
-  }), [model, resolver, search, specUrl, csrf, versions, previousDiff, changes, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
+  }), [model, resolver, search, specUrl, csrf, versions, previousDiff, changes, arazzo, route, navigate, operations, theme, setTheme, serverIndex, setServerIndex, serverVariables, setServerVariable, baseUrl, credentials, setCredential, paletteOpen])
 
   return <DocsContext.Provider value={value}>{children}</DocsContext.Provider>
 }

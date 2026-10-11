@@ -31,6 +31,11 @@ class ApiDocViewTests(SimpleTestCase):
         self.assertEqual(json.loads(html.unescape(attrs["versions"])), [{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}])
         self.assertNotIn("versions", element(self.client.get("/docs/").content.decode()))
 
+    def test_workflows_url_accepts_a_url_name(self):
+        attrs = element(self.client.get("/docs-workflows/").content.decode())
+        self.assertEqual(attrs["workflows-url"], "/workflows.arazzo.yaml")
+        self.assertNotIn("workflows-url", element(self.client.get("/docs/").content.decode()))
+
     def test_never_cached(self):
         response = self.client.get("/docs/")
         self.assertIn("no-cache", response["Cache-Control"])

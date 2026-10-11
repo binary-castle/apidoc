@@ -1,7 +1,7 @@
 # @binarycastle/apidoc-cli
 
 Compare two versions of an OpenAPI/Swagger document and fail CI on breaking
-changes.
+changes, and run Arazzo workflows as smoke tests.
 
 ```bash
 npx @binarycastle/apidoc-cli diff origin/main:openapi.yaml openapi.yaml --fail-on breaking
@@ -45,6 +45,32 @@ reported as worth checking.
 
 Operations match on method and full path, so renaming `{id}` to `{customerId}`
 or moving `/api` between `servers` and `paths` isn't reported as remove + add.
+
+## Workflows as smoke tests
+
+```bash
+npx @binarycastle/apidoc-cli run workflows.arazzo.yaml --server https://staging.example.com \
+  --input email=ci@example.com --header "Authorization: Bearer $TOKEN"
+```
+
+```
+✓ onboardAndCharge  passed
+  ✓ createCustomer     POST /api/v1/customers/  201  29 ms
+  ✓ chargeCustomer     POST /api/v1/payments/  201  4 ms
+  ✓ refundPart         POST /api/v1/payments/{id}/refund/  200  4 ms
+  outputs {"customerId":4,"paymentId":1,"refundStatus":"refunded"}
+```
+
+```
+apidoc run <arazzo> [--workflow <id>] [--spec <openapi>] [--server <url>]
+                    [--input name=value]... [--header "Name: value"]... [--format text|json]
+```
+
+Runs every workflow in the [Arazzo 1.0](https://spec.openapis.org/arazzo/latest.html)
+document (or just `--workflow`), passing outputs between steps, and exits 1 if
+any step fails. `--spec` defaults to the document's first `sourceDescription`;
+`--server` to the spec's first absolute server URL. Input values are parsed as
+JSON when they can be (`--input amount=4900` is a number).
 
 ## GitHub Actions
 

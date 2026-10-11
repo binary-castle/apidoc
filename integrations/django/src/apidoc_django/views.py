@@ -14,21 +14,25 @@ from . import conf
 THEMES = {"dark", "light"}
 
 
-def resolve_schema_url(value):
+def resolve_url(value, option="schema_url"):
     """Accept an absolute URL, a path, or a URL name such as "schema"."""
-    if not value:
-        raise ImproperlyConfigured(
-            "apidoc needs the URL of your OpenAPI schema: pass ApiDocView.as_view(schema_url=...) "
-            'or set APIDOC = {"SCHEMA_URL": "schema"} (drf-spectacular\'s default URL name).'
-        )
     if value.startswith(("/", "http://", "https://")):
         return value
     try:
         return reverse(value)
     except NoReverseMatch as error:
         raise ImproperlyConfigured(
-            f"apidoc schema_url {value!r} is not a path or a URL name that reverse() can resolve."
+            f"apidoc {option} {value!r} is not a path or a URL name that reverse() can resolve."
         ) from error
+
+
+def resolve_schema_url(value):
+    if not value:
+        raise ImproperlyConfigured(
+            "apidoc needs the URL of your OpenAPI schema: pass ApiDocView.as_view(schema_url=...) "
+            'or set APIDOC = {"SCHEMA_URL": "schema"} (drf-spectacular\'s default URL name).'
+        )
+    return resolve_url(value)
 
 
 def csrf_header_name():
@@ -60,6 +64,7 @@ class ApiDocView(TemplateView):
     bundle_url = None
     csrf = None
     versions = None
+    workflows_url = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -69,6 +74,7 @@ class ApiDocView(TemplateView):
         csrf = conf.get("CSRF") if self.csrf is None else self.csrf
         cookie_readable = not (settings.CSRF_USE_SESSIONS or settings.CSRF_COOKIE_HTTPONLY)
         versions = self.versions if self.versions is not None else conf.get("VERSIONS")
+        workflows_url = self.workflows_url or conf.get("WORKFLOWS_URL")
         context.update(
             schema_url=resolve_schema_url(self.schema_url or conf.get("SCHEMA_URL")),
             title=self.title or conf.get("TITLE") or "API Reference",
@@ -82,5 +88,6 @@ class ApiDocView(TemplateView):
             csp_nonce=getattr(self.request, "csp_nonce", None),
             # JSON for the element's `versions` attribute; the template escapes it.
             versions_json=json.dumps(versions) if versions else None,
+            workflows_url=resolve_url(workflows_url, "workflows_url") if workflows_url else None,
         )
         return context

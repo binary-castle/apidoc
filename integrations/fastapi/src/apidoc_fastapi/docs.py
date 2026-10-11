@@ -24,6 +24,7 @@ def get_apidoc_html(
     csrf_cookie: str | None = None,
     nonce: str | None = None,
     versions: list[dict[str, str]] | None = None,
+    workflows_url: str | None = None,
 ) -> HTMLResponse:
     """
     The docs page as an HTMLResponse, like FastAPI's ``get_swagger_ui_html``.
@@ -38,6 +39,8 @@ def get_apidoc_html(
         "csrf-cookie": csrf_cookie,
         # Older releases for the changelog, newest first.
         "versions": json.dumps(versions) if versions else None,
+        # Arazzo document with runnable multi-step workflows.
+        "workflows-url": workflows_url,
         "nonce": nonce,
     }
     element_attrs = "".join(f' {name}="{escape(value)}"' for name, value in attrs.items() if value)
@@ -76,6 +79,7 @@ def mount_apidoc(
     csrf_header: str | None = None,
     csrf_cookie: str | None = None,
     versions: list[dict[str, str]] | None = None,
+    workflows_url: str | None = None,
 ) -> None:
     """
     Serve the apidoc reference at ``path`` and the JS bundle under ``{path}/_static``.
@@ -89,6 +93,7 @@ def mount_apidoc(
     double-submit CSRF (e.g. fastapi-csrf-protect). ``versions`` lists older
     releases, newest first, for the changelog:
     ``[{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}]``.
+    ``workflows_url`` points at an Arazzo 1.x document with runnable workflows.
     """
     path = "/" + path.strip("/")
     if path == "/":
@@ -128,6 +133,7 @@ def mount_apidoc(
             csrf_header=csrf_header,
             csrf_cookie=csrf_cookie,
             versions=versions,
+            workflows_url=prefixed(request, workflows_url) if workflows_url else None,
         )
 
     app.add_api_route(path, apidoc_page, methods=["GET"], include_in_schema=False, response_class=HTMLResponse)

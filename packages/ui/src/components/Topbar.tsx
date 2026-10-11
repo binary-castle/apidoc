@@ -107,9 +107,10 @@ export function AuthPanel() {
 }
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
-  const { model, theme, setTheme, setPaletteOpen, route, navigate, credentials } = useDocs()
+  const { model, theme, setTheme, setPaletteOpen, route, navigate, credentials, arazzo } = useDocs()
   const authorized = Object.values(credentials).some(c => c.token || c.username || c.password)
   const inPlayground = route.view === 'playground'
+  const inWorkflows = route.view === 'workflow'
   const currentOperation = route.view === 'operation' ? route.id : route.view === 'playground' ? route.id : undefined
 
   const downloadSpec = () => {
@@ -159,12 +160,17 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </button>
       <div className="flex-1" />
       <div className="hidden gap-0.5 rounded-[9px] border border-line bg-card p-[3px] sm:flex">
-        <button type="button" onClick={() => navigate(currentOperation ? { view: 'operation', id: currentOperation } : { view: 'intro' })} className={`rounded-md px-3 py-1 text-xs ${!inPlayground ? 'bg-active font-medium text-fg' : 'text-subtle hover:text-fg-2'}`}>
+        <button type="button" onClick={() => navigate(currentOperation ? { view: 'operation', id: currentOperation } : { view: 'intro' })} className={`rounded-md px-3 py-1 text-xs ${!inPlayground && !inWorkflows ? 'bg-active font-medium text-fg' : 'text-subtle hover:text-fg-2'}`}>
           Reference
         </button>
         <button type="button" onClick={() => navigate({ view: 'playground', id: currentOperation })} className={`rounded-md px-3 py-1 text-xs ${inPlayground ? 'bg-active font-medium text-fg' : 'text-subtle hover:text-fg-2'}`}>
           Playground
         </button>
+        {arazzo.status === 'ready' && (
+          <button type="button" onClick={() => navigate({ view: 'workflow' })} className={`rounded-md px-3 py-1 text-xs ${inWorkflows ? 'bg-active font-medium text-fg' : 'text-subtle hover:text-fg-2'}`}>
+            Workflows
+          </button>
+        )}
       </div>
       <Popover
         align="right"

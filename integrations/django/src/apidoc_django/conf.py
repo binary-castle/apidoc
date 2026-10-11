@@ -16,6 +16,8 @@ DEFAULTS = {
     # Older releases for the changelog, newest first:
     # [{"version": "1.2.0", "url": "/static/openapi-1.2.0.yaml", "date": "2026-09-18"}]
     "VERSIONS": [],
+    # Arazzo 1.x document with runnable multi-step workflows: URL name, path or absolute URL.
+    "WORKFLOWS_URL": None,
 }
 
 BUNDLE_STATIC_PATH = "apidoc_django/apidoc.js"

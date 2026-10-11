@@ -86,6 +86,11 @@ class MountTests(unittest.TestCase):
         attrs = element(TestClient(app).get("/reference").text)
         self.assertEqual(json.loads(html.unescape(attrs["versions"])), releases)
 
+    def test_workflows_url_respects_root_path(self):
+        app = make_app(root_path="/api")
+        mount_apidoc(app, workflows_url="/workflows.arazzo.yaml")
+        self.assertEqual(element(TestClient(app).get("/reference").text)["workflows-url"], "/api/workflows.arazzo.yaml")
+
     def test_not_listed_in_the_openapi_schema(self):
         app = make_app()
         mount_apidoc(app)
