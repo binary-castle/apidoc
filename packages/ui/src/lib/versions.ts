@@ -12,11 +12,14 @@ export interface ApiVersion {
 
 const cache = new Map<string, Promise<ApiModel>>()
 
-/** Load (once) the spec of an older release, resolved against the current spec's URL. */
-export function loadVersion(url: string, specUrl?: string): Promise<ApiModel> {
+/**
+ * Load (once) the spec of an older release. Relative URLs resolve against the
+ * page, like any HTML attribute (document.baseURI also covers shadow roots).
+ */
+export function loadVersion(url: string): Promise<ApiModel> {
   let absolute = url
   try {
-    absolute = new URL(url, specUrl ? new URL(specUrl, window.location.href) : window.location.href).toString()
+    absolute = new URL(url, document.baseURI).toString()
   } catch {
     // Keep the original string; loadSpec reports the problem.
   }
@@ -32,13 +35,13 @@ export function loadVersion(url: string, specUrl?: string): Promise<ApiModel> {
 export type LoadState<T> = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; value: T } | { status: 'error'; message: string }
 
 /** Diff of the previous release against the current spec, for NEW/CHANGED badges. */
-export function usePreviousDiff(model: ApiModel, versions: ApiVersion[], specUrl?: string): SpecDiff | undefined {
+export function usePreviousDiff(model: ApiModel, versions: ApiVersion[]): SpecDiff | undefined {
   const previous = versions[0]
   const [diff, setDiff] = useState<SpecDiff>()
   useEffect(() => {
     if (!previous) return
     let cancelled = false
-    loadVersion(previous.url, specUrl)
+    loadVersion(previous.url)
       .then(older => {
         if (!cancelled) setDiff(diffSpecs(older, model))
       })
@@ -48,7 +51,7 @@ export function usePreviousDiff(model: ApiModel, versions: ApiVersion[], specUrl
     return () => {
       cancelled = true
     }
-  }, [previous, model, specUrl])
+  }, [previous, model])
   return diff
 }
 

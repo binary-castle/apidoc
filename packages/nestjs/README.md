@@ -4,6 +4,8 @@
 reference, a request playground with a contract check, a changelog between
 releases and runnable Arazzo workflows, set up like Swagger UI.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 ```bash
 npm install @binarycastle/apidoc-nestjs
 ```

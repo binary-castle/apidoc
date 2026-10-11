@@ -196,7 +196,7 @@ function CustomSpecPicker({ onLoaded }: { onLoaded: (model: ApiModel, label: str
 }
 
 export function ChangelogPage({ from }: { from?: string }) {
-  const { model, versions, specUrl, navigate } = useDocs()
+  const { model, versions, navigate } = useDocs()
   const current = model.info.version
   const releases = useMemo(() => [{ version: current, url: '', date: undefined as string | undefined }, ...versions], [current, versions])
   const [custom, setCustom] = useState<{ model: ApiModel; label: string }>()
@@ -210,14 +210,14 @@ export function ChangelogPage({ from }: { from?: string }) {
     let cancelled = false
     for (const release of versions) {
       setModels(m => (m[release.version] ? m : { ...m, [release.version]: { status: 'loading' } }))
-      loadVersion(release.url, specUrl)
+      loadVersion(release.url)
         .then(value => !cancelled && setModels(m => ({ ...m, [release.version]: { status: 'ready', value } })))
         .catch((e: Error) => !cancelled && setModels(m => ({ ...m, [release.version]: { status: 'error', message: e.message } })))
     }
     return () => {
       cancelled = true
     }
-  }, [versions, specUrl])
+  }, [versions])
 
   const modelFor = (version: string | undefined): LoadState<ApiModel> => {
     if (!version) return { status: 'idle' }

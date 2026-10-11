@@ -3,6 +3,8 @@
 Compare two versions of an OpenAPI/Swagger document and fail CI on breaking
 changes, and run Arazzo workflows as smoke tests.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 ```bash
 npx @binarycastle/apidoc-cli diff origin/main:openapi.yaml openapi.yaml --fail-on breaking
 ```

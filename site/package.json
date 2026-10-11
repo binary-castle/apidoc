@@ -1,0 +1,22 @@
+{
+  "name": "@apidoc/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The hosted demo (GitHub Pages): the <api-docs> bundle on the Orbit spec with an in-browser sandbox API.",
+  "scripts": {
+    "dev": "node scripts/prepare.mjs && vite",
+    "build": "node scripts/prepare.mjs && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@apidoc/core": "workspace:*",
+    "@binarycastle/apidoc": "workspace:*",
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

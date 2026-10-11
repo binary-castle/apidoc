@@ -102,9 +102,9 @@ export function DocsProvider({ model, specUrl, csrf, versions = NO_VERSIONS, wor
     readStored(`${storageKey}:credentials`, {}, 'session'),
   )
   const [paletteOpen, setPaletteOpen] = useState(false)
-  const previousDiff = usePreviousDiff(model, versions, specUrl)
+  const previousDiff = usePreviousDiff(model, versions)
   const changes = useOperationChanges(previousDiff)
-  const arazzo = useArazzo(workflows, specUrl)
+  const arazzo = useArazzo(workflows)
 
   const setServerIndex = useCallback((index: number) => {
     setServerIndexState(index)

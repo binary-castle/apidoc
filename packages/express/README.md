@@ -5,6 +5,8 @@ an OpenAPI reference, a request playground with a contract check, a changelog
 between releases and runnable Arazzo workflows. The UI bundle is served by
 your app (no CDN), so "Try it" calls your API same-origin, without CORS.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 ```bash
 npm install @binarycastle/apidoc-express
 ```

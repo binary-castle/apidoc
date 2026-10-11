@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>apidoc demo</title>
+    <meta name="description" content="apidoc: OpenAPI reference, playground, contract check, changelog and Arazzo workflows in one web component. Live demo.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c6cf6'/%3E%3Cpath d='M10 22 16 9l6 13M12.5 17h7' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="./src/demo.css">
+  </head>
+  <body>
+    <header class="bar">
+      <a class="brand" href="./" aria-label="apidoc demo home">
+        <span class="logo" aria-hidden="true">a</span>
+        <span>apidoc</span>
+        <span class="chip">demo</span>
+      </a>
+      <label class="picker">
+        <span class="sr-only">Spec</span>
+        <select id="spec-picker">
+          <option value="orbit">Orbit · in-browser sandbox</option>
+          <option value="petstore">Swagger Petstore · live API</option>
+          <option value="custom">Your spec URL…</option>
+        </select>
+      </label>
+      <form id="custom-form" class="custom" hidden>
+        <input id="custom-url" type="url" placeholder="https://example.com/openapi.json" required aria-label="OpenAPI document URL">
+        <button type="submit">Load</button>
+      </form>
+      <p id="note" class="note"></p>
+      <nav class="links">
+        <a href="https://github.com/binary-castle/apidoc#readme">Docs</a>
+        <a href="https://github.com/binary-castle/apidoc" class="gh">GitHub</a>
+      </nav>
+    </header>
+    <api-docs id="docs"></api-docs>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

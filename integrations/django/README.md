@@ -4,6 +4,8 @@ Serve the apidoc API reference, playground and ⌘K search from your Django
 project. Works with any OpenAPI source: drf-spectacular, drf-yasg, django-ninja,
 or a static file.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 ```bash
 pip install apidoc-django
 ```

@@ -9,8 +9,8 @@ export interface LoadedArazzo {
   url?: string
 }
 
-/** Load the Arazzo document once per source (URL resolved against the spec's URL). */
-export function useArazzo(source: string | SpecSource | undefined, specUrl?: string): LoadState<LoadedArazzo> {
+/** Load the Arazzo document once per source. Relative URLs resolve against the page. */
+export function useArazzo(source: string | SpecSource | undefined): LoadState<LoadedArazzo> {
   const key = typeof source === 'string' ? source : source && 'url' in source ? source.url : source ? 'inline' : ''
   const [state, setState] = useState<LoadState<LoadedArazzo>>({ status: 'idle' })
   useEffect(() => {
@@ -26,7 +26,7 @@ export function useArazzo(source: string | SpecSource | undefined, specUrl?: str
         return { doc: parseArazzo(source.content), text }
       }
       const raw = typeof source === 'string' ? source : source.url
-      const url = new URL(raw, specUrl ? new URL(specUrl, window.location.href) : window.location.href).toString()
+      const url = new URL(raw, document.baseURI).toString()
       const response = await fetch(url, { headers: { Accept: 'application/yaml, application/json;q=0.9, */*;q=0.5' } })
       if (!response.ok) throw new Error(`Could not fetch ${url}: HTTP ${response.status}`)
       const text = await response.text()
@@ -39,6 +39,6 @@ export function useArazzo(source: string | SpecSource | undefined, specUrl?: str
       cancelled = true
     }
     // `key` identifies the source; the object itself may be recreated each render.
-  }, [key, specUrl])
+  }, [key])
   return state
 }

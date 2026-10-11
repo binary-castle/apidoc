@@ -72,6 +72,7 @@ function inlineSpec(element: HTMLElement): string | undefined {
  * `versions` takes JSON: older releases, newest first, e.g.
  * '[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'.
  * `workflows-url` points at an Arazzo 1.x document with runnable multi-step workflows.
+ * Relative URLs in all three resolve against the page.
  * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
  */
 export class ApiDocsElement extends HTMLElement {

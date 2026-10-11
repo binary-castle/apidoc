@@ -62,6 +62,17 @@
         "examples/nestjs/dist/main.js"
       ],
       "port": 3001
+    },
+    {
+      "name": "site-preview",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@apidoc/site",
+        "preview"
+      ],
+      "port": 5190
     }
   ]
 }

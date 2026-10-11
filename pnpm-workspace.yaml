@@ -2,3 +2,4 @@ packages:
   - packages/*
   - examples/express
   - examples/nestjs
+  - site

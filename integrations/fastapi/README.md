@@ -3,6 +3,8 @@
 Serve the apidoc API reference, playground and ⌘K search from your FastAPI
 app, next to (or instead of) Swagger UI.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 ```bash
 pip install apidoc-fastapi
 ```

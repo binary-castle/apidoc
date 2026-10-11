@@ -3,6 +3,11 @@
 OpenAPI documentation you can actually work in — a reference, a request
 playground and ⌘K search over any OpenAPI 3.0/3.1 or Swagger 2.0 document.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)**: the Orbit example
+with a sandbox API that runs inside your browser, so "Try it", the contract
+check, the changelog and the workflows all work. Or load your own spec:
+`https://binary-castle.github.io/apidoc/?spec=<url>`.
+
 The design lives in [`design.fig`](design.fig) (open it in OpenPencil; pages
 **Dark** and **Light**).
 
@@ -36,6 +41,8 @@ examples/specs    Specs used for tests and the dev host:
 examples/django   DRF example app exposing both drf-spectacular (3.0) and drf-yasg (2.0).
 examples/fastapi  FastAPI example app (3.1, Pydantic models) with apidoc at /docs.
 examples/express  Express 5 app with a hand-written openapi.yaml.
+site              The live demo (GitHub Pages): the published bundle on the Orbit spec,
+                  with an in-memory Orbit sandbox in a service worker.
 examples/nestjs   NestJS 12 app documented by @nestjs/swagger.
 ```
 
@@ -85,6 +92,17 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 http://localhost:8001/docs is apidoc; FastAPI's Swagger UI is at `/swagger`.
 Regenerate the fixture with
 `.venv/bin/python -c "import json, main; json.dump(main.app.openapi(), open('../specs/fastapi.json', 'w'), indent=2)"`.
+
+### Live demo, locally
+
+```bash
+corepack pnpm --filter "@apidoc/site..." build
+corepack pnpm --filter @apidoc/site preview    # http://localhost:5190
+```
+
+`?spec=petstore` or `?spec=<url>` switches spec; `?theme=light|dark` forces a theme.
+The sandbox (`site/src/sandbox.ts`) is tested against `orbit.yaml` with the
+same contract check the UI runs.
 
 ### Express and NestJS examples
 
@@ -189,6 +207,11 @@ One-time setup before the first release:
 3. PyPI: add a "pending trusted publisher" for `apidoc-django` and
    `apidoc-fastapi` (owner/repo, workflow `release.yml`, environment `pypi`),
    and create the `pypi` environment in the GitHub repository settings.
+4. GitHub Pages (live demo): Settings → Pages → Source: **GitHub Actions**.
+   [`pages.yml`](.github/workflows/pages.yml) deploys `site/` on every push to `main`.
+
+What changed in each release is in [CHANGELOG.md](CHANGELOG.md); set the
+version's heading date when tagging.
 
 ## Status
 

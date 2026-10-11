@@ -18,3 +18,7 @@ integrations/django/src/apidoc_django/static/apidoc_django/
 integrations/fastapi/src/apidoc_fastapi/static/
 *.egg-info/
 build/
+
+# demo site: copied from the bundle and examples/specs at build time
+site/public/apidoc/
+site/public/specs/

@@ -6,6 +6,8 @@ schemas and fields, a changelog with breaking-change detection, and runnable
 multi-step workflows (Arazzo). One ES
 module, no framework required.
 
+**[Live demo](https://binary-castle.github.io/apidoc/)** · [Documentation](https://github.com/binary-castle/apidoc#readme)
+
 Works with any OpenAPI 3.0/3.1 or Swagger 2.0 document: drf-spectacular,
 drf-yasg, FastAPI, NestJS, springdoc, Laravel Scramble, a static file…
 
@@ -41,7 +43,9 @@ same place as `apidoc.js`; nothing is fetched from third-party CDNs.
 | `csrf-header`, `csrf-cookie`, `csrf-token` | Send a CSRF header on unsafe same-origin requests (cookie-session APIs) |
 | `nonce` | CSP nonce for the one `<style>` the element adds to the document |
 
-Height defaults to the viewport; set `style="--apidoc-height: 600px"` to change it.
+Relative URLs in `spec-url`, `versions` and `workflows-url` resolve against
+the page, like any other HTML attribute. Height defaults to the viewport; set
+`style="--apidoc-height: 600px"` to change it.
 
 Inline spec instead of a URL:
 
