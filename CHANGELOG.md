@@ -26,6 +26,9 @@ First release.
 - Workflows: runs Arazzo 1.0 workflows (run all or step through) with a live
   timeline and per-step contract check; exports them to TypeScript, Python
   or a `.http` file.
+- Branding: one `accent` colour (both themes derived from it with readable
+  contrast), logos per theme (or the spec's `info.x-logo`), and a custom
+  stylesheet that can override every colour and font token.
 - Works under a strict Content-Security-Policy (no `eval`, nonce support).
 
 ### CLI (`@binarycastle/apidoc-cli`)

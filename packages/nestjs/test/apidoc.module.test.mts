@@ -110,6 +110,13 @@ describe.each(['express', 'fastify'] as const)('%s adapter', adapter => {
     expect((await get('/reference/openapi.json')).status).toBe(404)
   })
 
+  it('passes branding through to the page', async () => {
+    const get = await start(adapter, withDocs({ accent: '#14b8a6', logo: '/logo.svg', faviconUrl: '/favicon.ico' }))
+    const html = await (await get('/docs/')).text()
+    expect(html).toContain('accent="#14b8a6" logo="/logo.svg"')
+    expect(html).toContain('<link rel="icon" href="/favicon.ico">')
+  })
+
   it('calls a document factory once', async () => {
     let calls = 0
     const get = await start(adapter, app =>

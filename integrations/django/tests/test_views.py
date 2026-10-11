@@ -36,6 +36,37 @@ class ApiDocViewTests(SimpleTestCase):
         self.assertEqual(attrs["workflows-url"], "/workflows.arazzo.yaml")
         self.assertNotIn("workflows-url", element(self.client.get("/docs/").content.decode()))
 
+    def test_branding_options_resolve_static_paths(self):
+        request = RequestFactory().get("/docs/")
+        view = ApiDocView.as_view(
+            schema_url="/schema.json",
+            accent="#14b8a6",
+            logo="img/logo.svg",
+            logo_dark="https://cdn.example.com/logo-dark.svg",
+            css_url="/brand.css",
+            favicon="img/favicon.png",
+        )
+        page = view(request).render().content.decode()
+        attrs = element(page)
+        self.assertEqual(attrs["accent"], "#14b8a6")
+        self.assertEqual(attrs["logo"], "/static/img/logo.svg")
+        self.assertEqual(attrs["logo-dark"], "https://cdn.example.com/logo-dark.svg")
+        self.assertEqual(attrs["css-url"], "/brand.css")
+        self.assertIn('<link rel="icon" href="/static/img/favicon.png">', page)
+
+    @override_settings(APIDOC={"SCHEMA_URL": "/schema.json", "ACCENT": "rgb(20 184 166)", "LOGO": "/logo.svg"})
+    def test_branding_from_settings(self):
+        attrs = element(ApiDocView.as_view()(RequestFactory().get("/docs/")).render().content.decode())
+        self.assertEqual(attrs["accent"], "rgb(20 184 166)")
+        self.assertEqual(attrs["logo"], "/logo.svg")
+        self.assertNotIn("css-url", attrs)
+
+    def test_no_branding_by_default(self):
+        page = self.client.get("/docs/").content.decode()
+        for name in ("accent", "logo", "logo-dark", "css-url"):
+            self.assertNotIn(name, element(page))
+        self.assertNotIn('rel="icon"', page)
+
     def test_never_cached(self):
         response = self.client.get("/docs/")
         self.assertIn("no-cache", response["Cache-Control"])

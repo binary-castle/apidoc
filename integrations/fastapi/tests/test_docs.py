@@ -91,6 +91,35 @@ class MountTests(unittest.TestCase):
         mount_apidoc(app, workflows_url="/workflows.arazzo.yaml")
         self.assertEqual(element(TestClient(app).get("/reference").text)["workflows-url"], "/api/workflows.arazzo.yaml")
 
+    def test_branding_options(self):
+        app = make_app()
+        mount_apidoc(
+            app,
+            accent="#14b8a6",
+            logo="/static/logo.svg",
+            logo_dark="https://cdn.example.com/logo-dark.svg",
+            css_url="brand.css",
+            favicon_url="data:image/svg+xml,%3Csvg%3E",
+        )
+        page = TestClient(app, root_path="/api").get("/reference").text
+        attrs = element(page)
+        self.assertEqual(attrs["accent"], "#14b8a6")
+        self.assertEqual(attrs["logo"], "/api/static/logo.svg")
+        self.assertEqual(attrs["logo-dark"], "https://cdn.example.com/logo-dark.svg")
+        self.assertEqual(attrs["css-url"], "brand.css")
+        self.assertIn('<link rel="icon" href="data:image/svg+xml,%3Csvg%3E">', page)
+
+    def test_no_branding_by_default(self):
+        page = TestClient(self._app_with_docs()).get("/reference").text
+        for name in ("accent", "logo", "logo-dark", "css-url"):
+            self.assertNotIn(name, element(page))
+        self.assertNotIn('rel="icon"', page)
+
+    def _app_with_docs(self) -> FastAPI:
+        app = make_app()
+        mount_apidoc(app)
+        return app
+
     def test_not_listed_in_the_openapi_schema(self):
         app = make_app()
         mount_apidoc(app)

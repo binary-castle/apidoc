@@ -1,5 +1,5 @@
 import { loadSpec, type ApiModel, type CsrfConfig, type SpecSource } from '@apidoc/core'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChangelogPage } from './components/ChangelogPage'
 import { CommandPalette } from './components/CommandPalette'
 import { IntroPage } from './components/IntroPage'
@@ -9,6 +9,7 @@ import { SchemaPage } from './components/SchemaPage'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
 import { WorkflowsPage } from './components/WorkflowsPage'
+import { accentStyle, resolveLogo, type Logo, type ResolvedLogo } from './lib/brand'
 import { useHashRoute } from './lib/router'
 import type { ApiVersion } from './lib/versions'
 import { readStored, writeStored } from './lib/storage'
@@ -31,6 +32,16 @@ export interface ApiReferenceProps {
   versions?: ApiVersion[]
   /** An Arazzo 1.x document (URL or content) describing multi-step workflows for this API. */
   workflows?: string | SpecSource
+  /**
+   * Brand colour (any CSS colour). The accent palette for both themes is
+   * derived from it, keeping text and button labels readable.
+   */
+  accent?: string
+  /**
+   * Logo shown in the top bar, as a URL or `{ light, dark, href, alt }`.
+   * Defaults to the spec's `info.x-logo`.
+   */
+  logo?: Logo
   className?: string
 }
 
@@ -58,11 +69,11 @@ function Main() {
   return <IntroPage />
 }
 
-function Shell() {
+function Shell({ logo }: { logo?: ResolvedLogo }) {
   const [navOpen, setNavOpen] = useState(false)
   return (
     <>
-      <Topbar onToggleSidebar={() => setNavOpen(open => !open)} />
+      <Topbar logo={logo} onToggleSidebar={() => setNavOpen(open => !open)} />
       <div className="relative flex min-h-0 flex-1">
         <div className="hidden lg:flex">
           <Sidebar />
@@ -82,7 +93,7 @@ function Shell() {
   )
 }
 
-export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflows, className = '' }: ApiReferenceProps) {
+export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflows, accent, logo, className = '' }: ApiReferenceProps) {
   const source: SpecSource = typeof spec === 'string' ? { url: spec } : spec
   const sourceKey = 'url' in source ? source.url : typeof source.content === 'string' ? source.content : JSON.stringify(source.content).slice(0, 2000)
   const [state, setState] = useState<{ model?: ApiModel; error?: string; key?: string }>({})
@@ -110,11 +121,15 @@ export function ApiReference({ spec, theme: forcedTheme, csrf, versions, workflo
   }, [sourceKey])
 
   const ready = state.key === sourceKey
+  const specUrl = 'url' in source ? source.url : undefined
+  // Set through the CSSOM (not a style attribute), so a strict CSP doesn't block it.
+  const brandStyle = useMemo(() => accentStyle(accent, theme), [accent, theme])
+  const resolvedLogo = useMemo(() => (state.model ? resolveLogo(logo, theme, state.model, specUrl) : undefined), [logo, theme, state.model, specUrl])
   return (
-    <div className={`apidoc flex h-full min-h-0 flex-col ${className}`} data-theme={theme}>
+    <div className={`apidoc flex h-full min-h-0 flex-col ${className}`} data-theme={theme} style={brandStyle}>
       {ready && state.model ? (
-        <DocsProvider model={state.model} specUrl={'url' in source ? source.url : undefined} csrf={csrf} versions={versions} workflows={workflows} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
-          <Shell />
+        <DocsProvider model={state.model} specUrl={specUrl} csrf={csrf} versions={versions} workflows={workflows} route={route} navigate={navigate} theme={theme} setTheme={setTheme}>
+          <Shell logo={resolvedLogo} />
         </DocsProvider>
       ) : ready && state.error ? (
         <div className="m-auto flex max-w-[520px] flex-col gap-3 rounded-xl border border-err-line bg-err-bg p-5">

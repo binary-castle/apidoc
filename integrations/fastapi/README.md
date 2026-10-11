@@ -48,6 +48,10 @@ mount_apidoc(
     versions=None,      # older releases for the changelog, newest first:
                         # [{"version": "1.2.0", "url": "/specs/1.2.0.json", "date": "2026-09-18"}]
     workflows_url=None, # Arazzo document with runnable multi-step workflows
+    accent=None,        # brand colour (any CSS colour); both themes derive from it
+    logo=None,          # top-bar logo URL; logo_dark= for a dark-theme variant
+    css_url=None,       # stylesheet that can override any --ad-* token
+    favicon_url=None,
 )
 ```
 

@@ -32,6 +32,14 @@ export interface ApidocHtmlOptions {
   versions?: ApiVersion[]
   /** Arazzo 1.x document with runnable multi-step workflows. */
   workflowsUrl?: string
+  /** Brand colour (any CSS colour); the accent palette for both themes is derived from it. */
+  accent?: string
+  /** Logo for the top bar, and an optional variant for the dark theme. */
+  logo?: string
+  logoDark?: string
+  /** Stylesheet applied inside the docs after the built-in theme; can override any `--ad-*` token. */
+  cssUrl?: string
+  faviconUrl?: string
 }
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }
@@ -59,6 +67,10 @@ export function renderApidocHtml(options: ApidocHtmlOptions): string {
     ['csrf-token', options.csrfHeader ? options.csrfToken : undefined],
     ['versions', options.versions?.length ? JSON.stringify(options.versions) : undefined],
     ['workflows-url', options.workflowsUrl],
+    ['accent', options.accent],
+    ['logo', options.logo],
+    ['logo-dark', options.logoDark],
+    ['css-url', options.cssUrl],
     // The element adds one <style> to the document head.
     ['nonce', styleNonce],
   ]
@@ -74,7 +86,7 @@ export function renderApidocHtml(options: ApidocHtmlOptions): string {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(options.title || 'API Reference')}</title>
+    <title>${escapeHtml(options.title || 'API Reference')}</title>${options.faviconUrl ? `\n    <link rel="icon" href="${escapeHtml(options.faviconUrl)}">` : ''}
     <style${nonceAttr(styleNonce)}>
       html, body { margin: 0; height: 100%; background: ${background}; }
       ${followOs}

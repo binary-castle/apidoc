@@ -47,6 +47,10 @@ app.use('/docs', apidoc({ spec: openapiDocument }))
 | `workflowsUrl` | An Arazzo 1.x document with multi-step workflows to run from the docs. |
 | `csrf` | `{ header, cookie?, token? }` for cookie-session APIs (see below). |
 | `nonce` | `(req, res) => nonce` for a strict CSP. Defaults to `res.locals.cspNonce`. |
+| `accent` | Brand colour (any CSS colour). The palette for both themes is derived from it, keeping text readable. |
+| `logo`, `logoDark` | Top-bar logo, and a variant for the dark theme. |
+| `cssUrl` | Stylesheet applied inside the docs after the theme; can override any `--ad-*` token. |
+| `faviconUrl` | Favicon for the docs page. |
 | `bundleUrl` | Load the UI from a CDN instead of serving it, e.g. `https://cdn.jsdelivr.net/npm/@binarycastle/apidoc@0.1/dist/apidoc.js`. |
 
 ### Session cookies and CSRF

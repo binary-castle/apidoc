@@ -27,6 +27,16 @@
         <input id="custom-url" type="url" placeholder="https://example.com/openapi.json" required aria-label="OpenAPI document URL">
         <button type="submit">Load</button>
       </form>
+      <div class="brands" role="group" aria-label="Brand">
+        <button type="button" class="swatch" data-brand="" title="apidoc default" style="--swatch: #8b7cff"></button>
+        <button type="button" class="swatch" data-brand="orbit" title="Orbit: logo and teal accent" style="--swatch: #14b8a6"></button>
+        <button type="button" class="swatch" data-brand="#2563eb" title="Blue" style="--swatch: #2563eb"></button>
+        <button type="button" class="swatch" data-brand="#f97316" title="Orange" style="--swatch: #f97316"></button>
+        <button type="button" class="swatch" data-brand="#e11d48" title="Rose" style="--swatch: #e11d48"></button>
+        <label class="swatch picker-swatch" title="Any colour">
+          <input id="accent-input" type="color" value="#8b7cff" aria-label="Accent colour">
+        </label>
+      </div>
       <p id="note" class="note"></p>
       <nav class="links">
         <a href="https://github.com/binary-castle/apidoc#readme">Docs</a>

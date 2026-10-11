@@ -145,11 +145,19 @@ export interface SchemaEntry {
   schema: SchemaObject
 }
 
+/** `info.x-logo` (the ReDoc convention): the API's logo, as given in the spec. */
+export interface SpecLogo {
+  url: string
+  altText?: string
+  href?: string
+  backgroundColor?: string
+}
+
 export interface ApiModel {
   /** Version string of the original input, e.g. "2.0", "3.0.3", "3.1.0". */
   specVersion: string
   sourceFormat: 'swagger2' | 'openapi3'
-  info: { title: string; version: string; description?: string; summary?: string }
+  info: { title: string; version: string; description?: string; summary?: string; logo?: SpecLogo }
   servers: ServerModel[]
   tags: TagModel[]
   operations: OperationModel[]

@@ -50,6 +50,11 @@ APIDOC = {
     "CSRF": True,            # pass the CSRF token to the playground
     "VERSIONS": [],          # older releases for the changelog, newest first
     "WORKFLOWS_URL": None,   # Arazzo document with runnable workflows (URL name or path)
+    # Branding: file paths below are static files ("img/logo.svg"), or use paths/URLs.
+    "ACCENT": None,          # any CSS colour, e.g. "#14b8a6"; both themes derive from it
+    "LOGO": None,            # top-bar logo; "LOGO_DARK" for a dark-theme variant
+    "CSS_URL": None,         # stylesheet that can override any --ad-* token
+    "FAVICON": None,
 }
 ```
 

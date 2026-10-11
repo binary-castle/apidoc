@@ -35,6 +35,13 @@ def resolve_schema_url(value):
     return resolve_url(value)
 
 
+def asset_url(value):
+    """A static file path ("img/logo.svg") becomes its static URL; paths and URLs pass through."""
+    if not value or value.startswith(("/", "http://", "https://", "data:")):
+        return value or None
+    return static(value)
+
+
 def csrf_header_name():
     """settings.CSRF_HEADER_NAME is a META key ("HTTP_X_CSRFTOKEN"); turn it into a header name."""
     meta_name = settings.CSRF_HEADER_NAME
@@ -65,6 +72,11 @@ class ApiDocView(TemplateView):
     csrf = None
     versions = None
     workflows_url = None
+    accent = None
+    logo = None
+    logo_dark = None
+    css_url = None
+    favicon = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -89,5 +101,10 @@ class ApiDocView(TemplateView):
             # JSON for the element's `versions` attribute; the template escapes it.
             versions_json=json.dumps(versions) if versions else None,
             workflows_url=resolve_url(workflows_url, "workflows_url") if workflows_url else None,
+            accent=self.accent or conf.get("ACCENT"),
+            logo=asset_url(self.logo or conf.get("LOGO")),
+            logo_dark=asset_url(self.logo_dark or conf.get("LOGO_DARK")),
+            css_url=asset_url(self.css_url or conf.get("CSS_URL")),
+            favicon=asset_url(self.favicon or conf.get("FAVICON")),
         )
         return context

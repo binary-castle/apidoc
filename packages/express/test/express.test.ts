@@ -199,6 +199,13 @@ describe('renderApidocHtml', () => {
     expect(html).toContain('nonce="css"></api-docs>')
   })
 
+  it('adds branding attributes and a favicon', () => {
+    const html = renderApidocHtml({ specUrl: '/s', bundleUrl: '/b', accent: '#14b8a6', logo: 'logo.svg', logoDark: 'logo-dark.svg', cssUrl: 'brand.css', faviconUrl: 'favicon.svg' })
+    expect(html).toContain('accent="#14b8a6" logo="logo.svg" logo-dark="logo-dark.svg" css-url="brand.css"')
+    expect(html).toContain('<link rel="icon" href="favicon.svg">')
+    expect(renderApidocHtml({ specUrl: '/s', bundleUrl: '/b' })).not.toMatch(/accent=|logo=|css-url=|rel="icon"/)
+  })
+
   it('ignores the CSRF cookie and token without a header', () => {
     const html = renderApidocHtml({ specUrl: '/s', bundleUrl: '/b', csrfCookie: 'c', csrfToken: 't' })
     expect(html).not.toContain('csrf')

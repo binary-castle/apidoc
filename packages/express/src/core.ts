@@ -40,6 +40,14 @@ export interface ApidocOptions<Req = unknown, Res = unknown> {
   versions?: ApiVersion[]
   /** Arazzo 1.x document with runnable multi-step workflows (URL, relative to the docs page). */
   workflowsUrl?: string
+  /** Brand colour (any CSS colour); the accent palette for both themes is derived from it. */
+  accent?: string
+  /** Top-bar logo URL, and an optional variant for the dark theme. */
+  logo?: string
+  logoDark?: string
+  /** Stylesheet applied inside the docs after the built-in theme; can override any `--ad-*` token. */
+  cssUrl?: string
+  faviconUrl?: string
 }
 
 export interface ApidocRequest<Req = unknown, Res = unknown> {
@@ -122,6 +130,11 @@ export function createApidoc<Req = unknown, Res = unknown>(options: ApidocOption
         nonce: options.nonce?.(req, res),
         versions: options.versions,
         workflowsUrl: options.workflowsUrl,
+        accent: options.accent,
+        logo: options.logo,
+        logoDark: options.logoDark,
+        cssUrl: options.cssUrl,
+        faviconUrl: options.faviconUrl,
       })
       return { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }, body: html }
     }

@@ -242,6 +242,7 @@ export function normalize(document: OpenAPIDocument, specVersion = document.open
       version: asString(document.info?.version) ?? '',
       description: asString(document.info?.description),
       summary: asString(document.info?.summary),
+      logo: specLogo((document.info as Record<string, unknown> | undefined)?.['x-logo']),
     },
     servers: servers.length ? servers : [{ url: '/', variables: {} }],
     tags: [...tagMap.values()].filter(tag => tag.operations.length),
@@ -250,4 +251,12 @@ export function normalize(document: OpenAPIDocument, specVersion = document.open
     securitySchemes: normalizeSecuritySchemes(resolver, document.components?.securitySchemes),
     document,
   }
+}
+
+function specLogo(value: unknown): ApiModel['info']['logo'] {
+  if (!value || typeof value !== 'object') return undefined
+  const logo = value as Record<string, unknown>
+  const url = asString(logo.url)
+  if (!url) return undefined
+  return { url, altText: asString(logo.altText), href: asString(logo.href), backgroundColor: asString(logo.backgroundColor) }
 }

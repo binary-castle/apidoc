@@ -25,6 +25,11 @@ def get_apidoc_html(
     nonce: str | None = None,
     versions: list[dict[str, str]] | None = None,
     workflows_url: str | None = None,
+    accent: str | None = None,
+    logo: str | None = None,
+    logo_dark: str | None = None,
+    css_url: str | None = None,
+    favicon_url: str | None = None,
 ) -> HTMLResponse:
     """
     The docs page as an HTMLResponse, like FastAPI's ``get_swagger_ui_html``.
@@ -41,18 +46,24 @@ def get_apidoc_html(
         "versions": json.dumps(versions) if versions else None,
         # Arazzo document with runnable multi-step workflows.
         "workflows-url": workflows_url,
+        # Branding: any CSS colour, logos per theme, and a stylesheet applied after the theme.
+        "accent": accent,
+        "logo": logo,
+        "logo-dark": logo_dark,
+        "css-url": css_url,
         "nonce": nonce,
     }
     element_attrs = "".join(f' {name}="{escape(value)}"' for name, value in attrs.items() if value)
     nonce_attr = f' nonce="{escape(nonce)}"' if nonce else ""
     background = "#fff" if theme == "light" else "#0b0b0f"
+    favicon = f'\n    <link rel="icon" href="{escape(favicon_url)}">' if favicon_url else ""
     follow_os = "" if theme else "@media (prefers-color-scheme: light) { html, body { background: #fff; } }"
     html = f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{escape(title)}</title>
+    <title>{escape(title)}</title>{favicon}
     <style{nonce_attr}>
       html, body {{ margin: 0; height: 100%; background: {background}; }}
       {follow_os}
@@ -80,6 +91,11 @@ def mount_apidoc(
     csrf_cookie: str | None = None,
     versions: list[dict[str, str]] | None = None,
     workflows_url: str | None = None,
+    accent: str | None = None,
+    logo: str | None = None,
+    logo_dark: str | None = None,
+    css_url: str | None = None,
+    favicon_url: str | None = None,
 ) -> None:
     """
     Serve the apidoc reference at ``path`` and the JS bundle under ``{path}/_static``.
@@ -94,6 +110,8 @@ def mount_apidoc(
     releases, newest first, for the changelog:
     ``[{"version": "1.2.0", "url": "/specs/1.2.0.yaml", "date": "2026-09-18"}]``.
     ``workflows_url`` points at an Arazzo 1.x document with runnable workflows.
+    Branding: ``accent`` (any CSS colour), ``logo``/``logo_dark``, ``css_url`` (a
+    stylesheet that can override the ``--ad-*`` tokens) and ``favicon_url``.
     """
     path = "/" + path.strip("/")
     if path == "/":
@@ -119,8 +137,9 @@ def mount_apidoc(
         app.mount(static_path, StaticFiles(directory=STATIC_DIR), name="apidoc-static")
 
     def prefixed(request: Request, url: str) -> str:
-        # Absolute URLs pass through; paths get the proxy prefix (root_path).
-        if url.startswith(("http://", "https://", "//")):
+        # Only absolute paths get the proxy prefix (root_path); URLs, data: URIs and
+        # page-relative paths pass through.
+        if not url.startswith("/") or url.startswith("//"):
             return url
         return request.scope.get("root_path", "").rstrip("/") + url
 
@@ -134,6 +153,11 @@ def mount_apidoc(
             csrf_cookie=csrf_cookie,
             versions=versions,
             workflows_url=prefixed(request, workflows_url) if workflows_url else None,
+            accent=accent,
+            logo=prefixed(request, logo) if logo else None,
+            logo_dark=prefixed(request, logo_dark) if logo_dark else None,
+            css_url=prefixed(request, css_url) if css_url else None,
+            favicon_url=prefixed(request, favicon_url) if favicon_url else None,
         )
 
     app.add_api_route(path, apidoc_page, methods=["GET"], include_in_schema=False, response_class=HTMLResponse)

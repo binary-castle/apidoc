@@ -50,7 +50,7 @@ const workflows = spec.endsWith('/orbit.yaml') ? '/specs/orbit.arazzo.yaml' : /d
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <div style={{ height: '100vh' }}>
-      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} versions={versions} workflows={workflows} />
+      <ApiReference spec={spec} theme={theme === 'light' || theme === 'dark' ? theme : undefined} versions={versions} workflows={workflows} accent={params.get('accent') ?? undefined} logo={params.get('logo') ?? undefined} />
     </div>
     <SpecSwitcher current={spec} />
   </StrictMode>,

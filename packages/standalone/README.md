@@ -42,9 +42,12 @@ same place as `apidoc.js`; nothing is fetched from third-party CDNs.
 | `workflows-url` | An [Arazzo 1.0](https://spec.openapis.org/arazzo/latest.html) document; its workflows become runnable pages |
 | `csrf-header`, `csrf-cookie`, `csrf-token` | Send a CSRF header on unsafe same-origin requests (cookie-session APIs) |
 | `nonce` | CSP nonce for the one `<style>` the element adds to the document |
+| `accent` | Brand colour (any CSS colour); the accent palette for both themes is derived from it, keeping text readable |
+| `logo`, `logo-dark`, `logo-href` | Top-bar logo, a dark-theme variant, and where it links. Defaults to the spec's `info.x-logo` |
+| `css-url` | Stylesheet applied inside the shadow root after the theme; override any `--ad-*` token or style `.apidoc` |
 
-Relative URLs in `spec-url`, `versions` and `workflows-url` resolve against
-the page, like any other HTML attribute. Height defaults to the viewport; set
+Relative URLs in attributes resolve against the page, like any other HTML
+attribute. For CSS text instead of a file, set the `customCss` property. Height defaults to the viewport; set
 `style="--apidoc-height: 600px"` to change it.
 
 Inline spec instead of a URL:

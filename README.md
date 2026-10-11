@@ -231,6 +231,49 @@ Done:
   timeline, per-step contract check), script export, and `apidoc run` for CI
 - `@binarycastle/apidoc-express` (Express 4/5, plain Node) and
   `@binarycastle/apidoc-nestjs` (NestJS 10–12 on Express or Fastify)
+- Branding: one `accent` colour (contrast-safe palettes for both themes),
+  logos (or `info.x-logo`), a custom stylesheet over `--ad-*` tokens, favicons
+
+## Branding
+
+```html
+<api-docs spec-url="/openapi.json" accent="#14b8a6"
+  logo="/img/logo.svg" logo-dark="/img/logo-dark.svg" css-url="/docs-theme.css"></api-docs>
+```
+
+(`accent`/`logo` on `<ApiReference>`; `ACCENT`, `LOGO`, `LOGO_DARK`, `CSS_URL`,
+`FAVICON` in Django; `accent=`, `logo=`, `logo_dark=`, `css_url=`, `favicon_url=`
+in FastAPI; `accent`, `logo`, `logoDark`, `cssUrl`, `faviconUrl` for Express and NestJS.)
+
+- **`accent`** takes any CSS colour. The accent palette (buttons, links, selection,
+  focus, code keys) is derived from it separately for each theme in OKLCH: link text keeps at
+  least 7:1 contrast on dark and 5:1 on light, and button labels at least 4.5:1, so a
+  yellow or navy brand stays readable. For an exact colour, set the tokens yourself.
+- **`logo`** replaces the `{}` mark in the top bar; `logo-dark` is used in the
+  dark theme. Without them, the spec's `info.x-logo` (the ReDoc convention) is used.
+- **`css-url`** (or the element's `customCss` property) is applied inside the
+  shadow root after the built-in theme. Every colour and font is a token:
+
+```css
+.apidoc {                            /* both themes */
+  --ad-font-sans: "Inter", system-ui, sans-serif;
+  --ad-font-mono: "JetBrains Mono", monospace;
+}
+.apidoc[data-theme="light"] { --ad-bg: #fffdf8; --ad-panel: #faf6ee; }
+.apidoc[data-theme="dark"]  { --ad-bg: #0a0f14; }
+```
+
+Tokens: surfaces `--ad-bg`, `-panel`, `-card`, `-raised`, `-hover`, `-active`;
+lines `--ad-line`, `-border`, `-border-strong`; text `--ad-fg-strong`, `-fg`,
+`-fg-2`, `-body`, `-muted`, `-subtle`, `-faint`; accent `--ad-accent`,
+`-accent-hover`, `-on-accent`, `-accent-text`, `-accent-soft`, `-accent-line`,
+`-selected`, `-selected-line`; methods `--ad-get`, `-post`, `-put`, `-patch`,
+`-delete` (each with `-bg`); status `--ad-ok`, `-warn`, `-err` (each with
+`-text`, `-bg`, `-line`); syntax `--ad-sx-text`, `-key`, `-string`, `-number`,
+`-keyword`, `-function`, `-punct`, `-comment`; fonts `--ad-font-sans`, `-font-mono`.
+The palette from `accent` is applied inline, so it wins over a stylesheet;
+leave `accent` out to set the accent tokens yourself. Load custom fonts on the
+page itself (e.g. a Google Fonts `<link>`): `@font-face` doesn't work inside a shadow root.
 
 ## Changelog and breaking changes
 

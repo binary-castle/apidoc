@@ -1,4 +1,6 @@
 import type { SecuritySchemeModel } from '@apidoc/core'
+import { useEffect, useState } from 'react'
+import type { ResolvedLogo } from '../lib/brand'
 import { useDocs } from '../state'
 import { Popover } from './Popover'
 import { Icon, Kbd } from './ui'
@@ -106,7 +108,21 @@ export function AuthPanel() {
   )
 }
 
-export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
+/** The brand mark: the configured logo, or the `{}` monogram when there is none (or it fails to load). */
+function BrandMark({ logo }: { logo?: ResolvedLogo }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [logo?.src])
+  if (!logo || failed) {
+    return <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent font-mono text-[13px] font-bold text-on-accent">{'{}'}</span>
+  }
+  return (
+    <span className="flex h-7 shrink-0 items-center rounded-md" style={logo.background ? { background: logo.background, padding: '2px 6px' } : undefined}>
+      <img src={logo.src} alt={logo.alt} onError={() => setFailed(true)} className="block h-full max-h-7 w-auto max-w-[140px] object-contain" />
+    </span>
+  )
+}
+
+export function Topbar({ onToggleSidebar, logo }: { onToggleSidebar: () => void; logo?: ResolvedLogo }) {
   const { model, theme, setTheme, setPaletteOpen, route, navigate, credentials, arazzo } = useDocs()
   const authorized = Object.values(credentials).some(c => c.token || c.username || c.password)
   const inPlayground = route.view === 'playground'
@@ -128,9 +144,10 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       <button type="button" onClick={onToggleSidebar} className="rounded-md p-1.5 text-muted hover:bg-hover lg:hidden" aria-label="Toggle navigation">
         <Icon name="menu" size={16} />
       </button>
-      <a href="#/" className="flex min-w-0 items-center gap-2.5">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent font-mono text-[13px] font-bold text-on-accent">{'{}'}</span>
-        <span className="flex min-w-0 flex-col">
+      <a href={logo?.href ?? '#/'} className="flex min-w-0 items-center gap-2.5">
+        <BrandMark logo={logo} />
+        {/* On phones a logo already says whose docs these are; the title would only truncate. */}
+        <span className={`min-w-0 flex-col ${logo ? 'hidden sm:flex' : 'flex'}`}>
           <span className="truncate text-sm font-semibold text-fg">{model.info.title}</span>
           <span className="hidden text-[11px] text-subtle sm:block">Reference · Playground</span>
         </span>

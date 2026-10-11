@@ -61,6 +61,36 @@ if (choice === 'orbit') {
 // The published bundle, exactly as users load it from npm or a CDN.
 void import(/* @vite-ignore */ new URL('apidoc/apidoc.js', document.baseURI).href)
 
+// --- Branding: accent swatches, a colour picker and the Orbit logo -------------
+
+const accentInput = document.getElementById('accent-input') as HTMLInputElement
+const swatches = [...document.querySelectorAll<HTMLButtonElement>('.swatch[data-brand]')]
+
+function applyBrand(brand: string) {
+  const orbit = brand === 'orbit'
+  const accent = orbit ? '#14b8a6' : brand
+  if (accent) docs.setAttribute('accent', accent)
+  else docs.removeAttribute('accent')
+  if (orbit) {
+    docs.setAttribute('logo', 'brand/orbit-light.svg')
+    docs.setAttribute('logo-dark', 'brand/orbit-dark.svg')
+  } else {
+    docs.removeAttribute('logo')
+    docs.removeAttribute('logo-dark')
+  }
+  for (const swatch of swatches) swatch.setAttribute('aria-pressed', String(swatch.dataset.brand === brand))
+  if (/^#[0-9a-f]{6}$/i.test(accent)) accentInput.value = accent
+  // Keep the choice in the URL so it can be shared.
+  const url = new URL(window.location.href)
+  if (brand) url.searchParams.set('brand', brand)
+  else url.searchParams.delete('brand')
+  history.replaceState(history.state, '', url)
+}
+
+for (const swatch of swatches) swatch.addEventListener('click', () => applyBrand(swatch.dataset.brand ?? ''))
+accentInput.addEventListener('input', () => applyBrand(accentInput.value))
+applyBrand(params.get('brand') ?? params.get('accent') ?? '')
+
 /** The service worker answers requests to the Orbit sandbox server. */
 async function startSandbox() {
   if (!('serviceWorker' in navigator)) {

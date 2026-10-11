@@ -139,3 +139,15 @@ describe('loadSpec', () => {
     await expect(loadSpec({ content: '[1, 2' })).rejects.toThrow(/Could not parse/)
   })
 })
+
+describe('info.x-logo', () => {
+  it('is read into the model', async () => {
+    const model = await loadSpec({ content: { openapi: '3.1.0', info: { title: 'A', version: '1', 'x-logo': { url: 'logo.svg', altText: 'Acme', href: 'https://acme.dev' } }, paths: {} } })
+    expect(model.info.logo).toEqual({ url: 'logo.svg', altText: 'Acme', href: 'https://acme.dev', backgroundColor: undefined })
+  })
+
+  it('is ignored without a url', async () => {
+    const model = await loadSpec({ content: { openapi: '3.1.0', info: { title: 'A', version: '1', 'x-logo': { altText: 'Acme' } }, paths: {} } })
+    expect(model.info.logo).toBeUndefined()
+  })
+})

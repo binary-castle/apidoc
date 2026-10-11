@@ -1,4 +1,4 @@
-import { ApiReference, type ApiReferenceProps, type ApiVersion, type Theme } from '@apidoc/ui'
+import { ApiReference, type ApiReferenceProps, type ApiVersion, type Logo, type Theme } from '@apidoc/ui'
 import themeCss from '@apidoc/ui/theme.css?inline'
 import { createRoot, type Root } from 'react-dom/client'
 
@@ -73,13 +73,34 @@ function inlineSpec(element: HTMLElement): string | undefined {
  * '[{"version":"2.3.0","url":"/openapi-2.3.0.yaml","date":"2026-09-18"}]'.
  * `workflows-url` points at an Arazzo 1.x document with runnable multi-step workflows.
  * Relative URLs in all three resolve against the page.
- * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or object).
+ *
+ * Branding: `accent` (any CSS colour; the palette for both themes is derived
+ * from it), `logo` / `logo-dark` / `logo-href`, and `css-url`, a stylesheet
+ * applied inside the shadow root after the built-in theme, so it can
+ * override any `--ad-*` token or style `.apidoc` directly.
+ *
+ * Properties: `spec` accepts a URL string, `{ url }`, or `{ content }` (text or
+ * object); `customCss` takes CSS text, applied like `css-url`.
  */
 export class ApiDocsElement extends HTMLElement {
-  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions', 'workflows-url']
+  static observedAttributes = ['spec-url', 'theme', 'csrf-header', 'csrf-cookie', 'csrf-token', 'versions', 'workflows-url', 'accent', 'logo', 'logo-dark', 'logo-href', 'css-url']
 
   #root?: Root
   #spec?: SpecInput
+  #customCss = ''
+  /** This element's own stylesheet (css-url + customCss), adopted after the shared theme. */
+  #customSheet?: CSSStyleSheet
+  #cssUrl?: string
+  #cssUrlText = ''
+
+  get customCss(): string {
+    return this.#customCss
+  }
+
+  set customCss(value: string) {
+    this.#customCss = value ?? ''
+    this.#applyCustomCss()
+  }
 
   get spec(): SpecInput | undefined {
     return this.#spec
@@ -94,6 +115,8 @@ export class ApiDocsElement extends HTMLElement {
     if (this.#root) return
     const shadow = this.shadowRoot ?? this.attachShadow({ mode: 'open' })
     shadow.adoptedStyleSheets = sharedSheets(this.nonce ?? '')
+    this.#applyCustomCss()
+    this.#loadCssUrl()
     const mount = document.createElement('div')
     mount.className = 'apidoc-mount'
     shadow.replaceChildren(mount)
@@ -111,8 +134,48 @@ export class ApiDocsElement extends HTMLElement {
     })
   }
 
-  attributeChangedCallback() {
-    this.#render()
+  attributeChangedCallback(name: string) {
+    if (name === 'css-url') this.#loadCssUrl()
+    else this.#render()
+  }
+
+  /** Fetch `css-url` (relative to the page) once per value; failures are reported, not fatal. */
+  #loadCssUrl() {
+    const raw = this.getAttribute('css-url') ?? undefined
+    if (raw === this.#cssUrl || !this.shadowRoot) return
+    this.#cssUrl = raw
+    this.#cssUrlText = ''
+    this.#applyCustomCss()
+    if (!raw) return
+    const url = new URL(raw, document.baseURI).toString()
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        return response.text()
+      })
+      .then(text => {
+        if (this.#cssUrl !== raw) return
+        // Relative url()s inside the stylesheet resolve against the stylesheet itself.
+        this.#cssUrlText = text
+        this.#applyCustomCss(url)
+      })
+      .catch((error: Error) => console.warn(`<api-docs>: could not load css-url ${url}: ${error.message}`))
+  }
+
+  #applyCustomCss(baseURL?: string) {
+    const shadow = this.shadowRoot
+    if (!shadow) return
+    const text = `${this.#cssUrlText}\n${this.#customCss}`.trim()
+    const shared = sharedSheets(this.nonce ?? '')
+    if (!text) {
+      this.#customSheet = undefined
+      shadow.adoptedStyleSheets = shared
+      return
+    }
+    // A new sheet when the base URL changes (it can only be set at construction).
+    if (!this.#customSheet || baseURL) this.#customSheet = new CSSStyleSheet(baseURL ? { baseURL } : undefined)
+    this.#customSheet.replaceSync(text)
+    shadow.adoptedStyleSheets = [...shared, this.#customSheet]
   }
 
   #render() {
@@ -128,7 +191,30 @@ export class ApiDocsElement extends HTMLElement {
     const csrf = csrfHeader
       ? { headerName: csrfHeader, cookieName: this.getAttribute('csrf-cookie') ?? undefined, token: this.getAttribute('csrf-token') ?? undefined }
       : undefined
-    this.#root.render(<ApiReference spec={spec} theme={theme} csrf={csrf} versions={this.#versions()} workflows={this.getAttribute('workflows-url') ?? undefined} />)
+    this.#root.render(
+      <ApiReference
+        spec={spec}
+        theme={theme}
+        csrf={csrf}
+        versions={this.#versions()}
+        workflows={this.getAttribute('workflows-url') ?? undefined}
+        accent={this.getAttribute('accent') ?? undefined}
+        logo={this.#logo()}
+      />,
+    )
+  }
+
+  #logoCache?: { key: string; value: Logo | undefined }
+
+  /** `logo`, `logo-dark` and `logo-href` as one stable value. */
+  #logo(): Logo | undefined {
+    const [light, dark, href] = [this.getAttribute('logo'), this.getAttribute('logo-dark'), this.getAttribute('logo-href')]
+    const key = `${light}|${dark}|${href}`
+    if (this.#logoCache?.key !== key) {
+      const value = light || dark ? { light: light ?? undefined, dark: dark ?? undefined, href: href ?? undefined } : undefined
+      this.#logoCache = { key, value }
+    }
+    return this.#logoCache.value
   }
 
   #versionsCache?: { raw: string; value: ApiVersion[] | undefined }

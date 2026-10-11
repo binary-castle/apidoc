@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="112" height="28" viewBox="0 0 112 28">
+  <circle cx="14" cy="14" r="6" fill="#14b8a6"/>
+  <ellipse cx="14" cy="14" rx="12.5" ry="5.2" fill="none" stroke="#14b8a6" stroke-width="2" transform="rotate(-28 14 14)"/>
+  <text x="33" y="19.5" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" letter-spacing="-0.4" fill="#0b1b2b">Orbit</text>
+</svg>
