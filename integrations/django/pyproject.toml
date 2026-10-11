@@ -23,7 +23,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/binary-castle/apidoc"
-Documentation = "https://github.com/binary-castle/apidoc/tree/master/integrations/django#readme"
+Documentation = "https://github.com/binary-castle/apidoc/tree/main/integrations/django#readme"
 Issues = "https://github.com/binary-castle/apidoc/issues"
 Changelog = "https://github.com/binary-castle/apidoc/releases"
 
