@@ -1,10 +1,11 @@
-import { applyCsrf, generateSnippet, unwrapNullable, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
+import { applyCsrf, checkResponse, generateSnippet, unwrapNullable, type ContractReport, type HttpMethod, type OperationModel, type ParameterModel } from '@apidoc/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { bodyForMedia, defaultDraft, draftToRequest, type Draft } from '../lib/draft'
 import { readStored, writeStored } from '../lib/storage'
 import { blockedHeaders, formatBytes, formatMs, sendRequest, type SendFailure, type SendResult } from '../lib/send'
 import { useDocs } from '../state'
 import { CodeBlock } from './CodeBlock'
+import { ContractDetails, ContractStrip } from './ContractPanel'
 import { PathText } from './OperationPage'
 import { AuthPanel } from './Topbar'
 import { CopyButton, Icon, MethodPill, MethodText, STATUS_DOT, STATUS_TEXT, statusTone } from './ui'
@@ -28,6 +29,7 @@ interface HistoryEntry {
   durationMs: number
   at: number
   draft: Draft
+  contract?: { errors: number; warnings: number }
 }
 
 const HISTORY_LIMIT = 50
@@ -104,8 +106,8 @@ function HeaderEditor({ headers, onChange }: { headers: Record<string, string>; 
   )
 }
 
-function ResponseView({ result, request }: { result: SendResult | SendFailure | undefined; request: ReturnType<typeof draftToRequest> }) {
-  const [tab, setTab] = useState<'body' | 'headers' | 'curl'>('body')
+function ResponseView({ result, report, request }: { result: SendResult | SendFailure | undefined; report?: ContractReport; request: ReturnType<typeof draftToRequest> }) {
+  const [tab, setTab] = useState<'body' | 'headers' | 'contract' | 'curl'>('body')
   if (!result) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
@@ -148,10 +150,14 @@ function ResponseView({ result, request }: { result: SendResult | SendFailure | 
         <div className="flex-1" />
         <CopyButton text={pretty} label="Copy body" className="border border-border" />
       </div>
+      {report && <ContractStrip report={report} onOpen={() => setTab('contract')} />}
       <div className="flex gap-4 border-b border-line">
-        {(['body', 'headers', 'curl'] as const).map(name => (
-          <button key={name} type="button" onClick={() => setTab(name)} className={`-mb-px border-b-2 pb-2 text-[13px] ${tab === name ? 'border-accent font-medium text-fg' : 'border-transparent text-subtle hover:text-fg-2'}`}>
-            {name === 'body' ? 'Body' : name === 'headers' ? `Headers ${result.headers.length}` : 'cURL'}
+        {(['body', 'headers', 'contract', 'curl'] as const).map(name => (
+          <button key={name} type="button" onClick={() => setTab(name)} className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 text-[13px] ${tab === name ? 'border-accent font-medium text-fg' : 'border-transparent text-subtle hover:text-fg-2'}`}>
+            {name === 'body' ? 'Body' : name === 'headers' ? `Headers ${result.headers.length}` : name === 'contract' ? 'Contract check' : 'cURL'}
+            {name === 'contract' && report && report.issues.length > 0 && (
+              <span className={`rounded-full px-1.5 text-[10px] font-semibold leading-4 ${report.errors ? 'bg-delete-bg text-err' : 'bg-put-bg text-warn'}`}>{report.issues.length}</span>
+            )}
           </button>
         ))}
       </div>
@@ -171,6 +177,7 @@ function ResponseView({ result, request }: { result: SendResult | SendFailure | 
           {!result.headers.length && <p className="p-3.5 text-xs text-subtle">The browser only exposes CORS-safelisted headers for cross-origin responses.</p>}
         </div>
       )}
+      {tab === 'contract' && (report ? <ContractDetails report={report} /> : <p className="text-xs text-subtle">No contract check for this response.</p>)}
       {tab === 'curl' && (
         <div className="relative overflow-hidden rounded-xl border border-border bg-card">
           <CodeBlock code={generateSnippet('curl', request)} language="shellscript" className="px-4 py-3.5" />
@@ -186,6 +193,7 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
   const [draft, setDraft] = useState<Draft>(() => initialDraft ?? defaultDraft(operation, resolver))
   const [tab, setTab] = useState<Tab>(() => (operation.requestBody ? 'body' : 'params'))
   const [result, setResult] = useState<SendResult | SendFailure>()
+  const [report, setReport] = useState<ContractReport>()
   const [sending, setSending] = useState(false)
   const abort = useRef<AbortController>(undefined)
 
@@ -215,7 +223,12 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
     const outcome = await sendRequest(outgoing, controller.signal)
     if (abort.current !== controller) return
     setSending(false)
+    // Compare the live response with what the spec documents for this operation.
+    const contract = outcome.ok
+      ? checkResponse(operation, { status: outcome.status, contentType: outcome.contentType, body: outcome.body, json: outcome.json }, resolver)
+      : undefined
     setResult(outcome)
+    setReport(contract)
     onSent({
       id: `${Date.now()}`,
       operationId: operation.id,
@@ -226,6 +239,7 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
       durationMs: outcome.durationMs,
       at: Date.now(),
       draft: withoutSecrets(draft),
+      contract: contract && { errors: contract.errors, warnings: contract.warnings },
     })
   }
 
@@ -324,7 +338,7 @@ function Workbench({ operation, initialDraft, onSent }: { operation: OperationMo
         )}
       </section>
       <section className="flex min-h-[360px] min-w-0 flex-1 flex-col border-t border-line bg-panel p-5 lg:border-l lg:border-t-0">
-        <ResponseView result={result} request={request} />
+        <ResponseView result={result} report={report} request={request} />
       </section>
     </div>
   )
@@ -371,7 +385,11 @@ export function Playground({ operationId }: { operationId?: string }) {
                 <span className="min-w-0 flex-1 truncate font-mono text-xs text-fg-2">{entry.path}</span>
                 <span className={`font-mono text-[11px] ${STATUS_TEXT[tone]}`}>{entry.status ?? 'ERR'}</span>
               </span>
-              <span className="text-[11px] text-subtle">{timeAgo(entry.at)} · {formatMs(entry.durationMs)}</span>
+              <span className="text-[11px] text-subtle">
+                {timeAgo(entry.at)} · {formatMs(entry.durationMs)}
+                {entry.contract?.errors ? <span className="text-err"> · {entry.contract.errors} contract error{entry.contract.errors === 1 ? '' : 's'}</span> : null}
+                {!entry.contract?.errors && entry.contract?.warnings ? <span className="text-warn"> · {entry.contract.warnings} warning{entry.contract.warnings === 1 ? '' : 's'}</span> : null}
+              </span>
             </button>
           )
         })}

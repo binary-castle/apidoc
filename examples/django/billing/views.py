@@ -35,6 +35,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(archived=False)
         return queryset
 
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        # Deliberate drift so apidoc's contract check has something to find:
+        # the serializer (and therefore the generated spec) has no tax_ids.
+        response.data["tax_ids"] = []
+        return response
+
     @extend_schema(summary="Archive a customer", request=None, responses=CustomerSerializer)
     @action(detail=True, methods=["post"])
     def archive(self, request, pk=None):

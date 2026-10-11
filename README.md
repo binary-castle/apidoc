@@ -11,7 +11,9 @@ The design lives in [`design.fig`](design.fig) (open it in OpenPencil; pages
 ```
 packages/core     Framework-agnostic engine: load (URL/JSON/YAML), Swagger 2.0 → 3.0
                   upgrade, $ref resolution, normalized model, example generation,
-                  request building, code snippets, search index. No UI, no Node-only deps.
+                  request building, code snippets, search index, and the contract
+                  check (an eval-free JSON Schema validator for 3.0 and 3.1).
+                  No UI, no Node-only deps.
 packages/ui       React UI (<ApiReference spec="…" />): reference, playground, ⌘K palette.
                   `pnpm dev` runs a dev host with a spec switcher.
 packages/standalone
@@ -56,6 +58,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 - http://localhost:8000/docs/ — docs served by Django through `apidoc-django`.
   Log in at `/admin/` first and playground requests use your session (CSRF handled).
+  "Retrieve a customer" deliberately returns an undocumented `tax_ids` field so
+  the contract check has something to report.
 - Or pick **Django · drf-spectacular (live)** in the UI dev host's switcher
   (bottom-right) to load the same API cross-origin.
 
@@ -131,10 +135,29 @@ Done:
 - `packages/standalone`: `<api-docs>` web component, Shadow DOM isolated
 - `apidoc-django`: docs served by Django, session auth + CSRF, CSP nonces
 - `apidoc-fastapi`: `mount_apidoc(app)`, root_path aware, can replace Swagger UI
+- Contract check: every playground response is validated against the spec
+  (status, content type, body schema, undocumented fields) with a suggested
+  YAML patch for fields the spec is missing
+
+## Contract check
+
+After each playground request apidoc compares the live response with the spec:
+
+- **Status** must be documented (exact, then `2XX`-style ranges, then `default`).
+- **Content-Type** must match a documented media type (wildcards allowed).
+- **Body** is validated against the response schema. OpenAPI 3.0 (`nullable`,
+  boolean `exclusiveMinimum`) and 3.1 (`type: [x, "null"]`, `const`,
+  `prefixItems`) are both understood, as are `allOf`, `anyOf`, `oneOf` with
+  discriminators, and `additionalProperties`.
+- **Undocumented fields** (returned but not in the spec) are warnings, with a
+  suggested YAML patch for `components/schemas`.
+
+Errors mean the API broke its documented contract; warnings mean the spec is
+incomplete. The validator is interpreted (no `eval`/`new Function`), so it runs
+under a strict Content-Security-Policy.
 
 Next:
 - Integrations: Express/NestJS
 - Publish the bundle (npm → jsDelivr/unpkg)
-- Contract check (validate live responses against the spec with Ajv)
 - Changelog / spec diff (A04), Workflows / Arazzo (A05)
 - Optional proxy for cross-origin "Try it" and DNS/TLS timing
